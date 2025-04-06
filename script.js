@@ -101,6 +101,10 @@ function setupDarkMode() {
   const darkModeToggle = document.getElementById("darkModeToggle")
 
   if (darkModeToggle) {
+    // Hacer visible el botón inmediatamente sin esperar ninguna condición
+    darkModeToggle.style.opacity = "1"
+    darkModeToggle.style.visibility = "visible"
+
     darkModeToggle.addEventListener("click", function () {
       document.body.classList.toggle("dark-mode")
       const icon = this.querySelector("i")
@@ -151,6 +155,11 @@ function setupBackToTop() {
         behavior: "smooth",
       })
     })
+
+    // Verificar posición inicial
+    if (window.scrollY > 300) {
+      backToTopButton.classList.add("show")
+    }
   }
 }
 
