@@ -1278,3 +1278,36 @@ body.dark-mode .contact-method {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+.verification-input {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.25rem;
+    transition: var(--transition);
+    border: 2px solid var(--border-color);
+  }
+  
+  .verification-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(200, 169, 126, 0.25);
+  }
+  
+  /* Estilos para modo oscuro */
+  body.dark-mode .verification-input {
+    background-color: var(--dark-color);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  /* Animación de pulso para el reenvío de código */
+  @keyframes fadeInOut {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+  
+  #countdown.counting {
+    animation: fadeInOut 1.5s infinite;
+  }
