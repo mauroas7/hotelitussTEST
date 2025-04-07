@@ -32,6 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Detectar scroll para cambiar estilo de navbar
   handleNavbarScroll()
+  
+  // Configurar validación de campos específicos
+  setupFieldValidation()
+  
+  // Gestión de sesión de usuario
+  setupUserSession()
 })
 
 /**
@@ -271,6 +277,52 @@ function setupFormValidation() {
       false,
     )
   })
+  
+  // Validación específica para el formulario de creación de usuario
+  const createUserForm = document.getElementById("createUserForm")
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", function(event) {
+      // La validación de campos específicos se maneja en setupFieldValidation()
+      // Aquí solo verificamos si el formulario es válido en general
+      if (!this.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    })
+  }
+}
+
+/**
+ * Configura la validación de campos específicos (nombre y teléfono)
+ */
+function setupFieldValidation() {
+  // Validación para el campo de nombre (solo letras)
+  const nombreInput = document.getElementById("userName")
+  if (nombreInput) {
+    // Añadir atributos de validación
+    nombreInput.setAttribute("pattern", "[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+")
+    nombreInput.setAttribute("title", "Por favor ingrese solo letras")
+    
+    // Validar mientras el usuario escribe
+    nombreInput.addEventListener("input", function() {
+      // Permitir letras, espacios y caracteres acentuados
+      this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, "")
+    })
+  }
+  
+  // Validación para el campo de teléfono (solo números)
+  const telefonoInput = document.getElementById("userTelefono")
+  if (telefonoInput) {
+    // Añadir atributos de validación
+    telefonoInput.setAttribute("pattern", "[0-9]+")
+    telefonoInput.setAttribute("title", "Por favor ingrese solo números")
+    
+    // Validar mientras el usuario escribe
+    telefonoInput.addEventListener("input", function() {
+      // Permitir solo números
+      this.value = this.value.replace(/[^0-9]/g, "")
+    })
+  }
 }
 
 /**
@@ -438,6 +490,43 @@ function updateActiveNavLink() {
   }
 }
 
+/**
+ * Configura la gestión de sesión de usuario
+ */
+function setupUserSession() {
+  const loginLink = document.getElementById("loginLink")
+  const createUserLink = document.getElementById("createUserLink")
+  const logoutBtn = document.getElementById("logoutBtn")
+
+  // Detectar si viene de un login exitoso con ?logged=true
+  const urlParams = new URLSearchParams(window.location.search)
+  const loggedIn = urlParams.get("logged")
+
+  if (loggedIn === "true") {
+    localStorage.setItem("userLoggedIn", "true")
+    window.history.replaceState({}, document.title, "/") // Limpiar la URL
+  }
+
+  // Mostrar u ocultar botones según estado
+  const isLogged = localStorage.getItem("userLoggedIn") === "true"
+
+  if (isLogged) {
+    if (loginLink) loginLink.style.display = "none"
+    if (createUserLink) createUserLink.style.display = "none"
+    if (logoutBtn) logoutBtn.style.display = "inline-block"
+  } else {
+    if (logoutBtn) logoutBtn.style.display = "none"
+  }
+
+  // Función para cerrar sesión
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("userLoggedIn")
+      window.location.reload() // Refresca la página
+    })
+  }
+}
+
 // URL base del backend en Render
 const backendBaseUrl = "https://hotelitus.onrender.com"
 
@@ -502,61 +591,3 @@ function deleteReserva(id) {
       alert("Error al eliminar la reserva.")
     })
 }
-
-// Gestión de sesión de usuario
-document.addEventListener("DOMContentLoaded", () => {
-  const loginLink = document.getElementById("loginLink")
-  const createUserLink = document.getElementById("createUserLink")
-  const logoutBtn = document.getElementById("logoutBtn")
-
-  // Detectar si viene de un login exitoso con ?logged=true
-  const urlParams = new URLSearchParams(window.location.search)
-  const loggedIn = urlParams.get("logged")
-
-  if (loggedIn === "true") {
-    localStorage.setItem("userLoggedIn", "true")
-    window.history.replaceState({}, document.title, "/") // Limpiar la URL
-  }
-
-  // Mostrar u ocultar botones según estado
-  const isLogged = localStorage.getItem("userLoggedIn") === "true"
-
-  if (isLogged) {
-    if (loginLink) loginLink.style.display = "none"
-    if (createUserLink) createUserLink.style.display = "none"
-    if (logoutBtn) logoutBtn.style.display = "inline-block"
-  } else {
-    if (logoutBtn) logoutBtn.style.display = "none"
-  }
-
-  // Función para cerrar sesión
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("userLoggedIn")
-      window.location.reload() // Refresca la página
-    })
-  }
-})
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Validación para el campo de nombre (solo letras)
-    const nombreInput = document.getElementById('userName');
-    if (nombreInput) {
-      nombreInput.addEventListener('input', function(e) {
-        // Permitir letras, espacios y caracteres acentuados
-        this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, '');
-      });
-    }
-    
-    // Validación para el campo de teléfono (solo números)
-    const telefonoInput = document.getElementById('userTelefono');
-    if (telefonoInput) {
-      telefonoInput.addEventListener('input', function(e) {
-        // Permitir solo números
-        this.value = this.value.replace(/[^0-9]/g, '');
-      });
-    }
-  });
-</script>
