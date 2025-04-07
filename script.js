@@ -637,10 +637,15 @@ document.addEventListener("DOMContentLoaded", () => {
     createUserForm.addEventListener("submit", async function (event) {
       event.preventDefault();
 
-      const nombre = document.getElementById("userName").value;
-      const correo = document.getElementById("userEmail").value;
-      const telefono = document.getElementById("userTelefono").value;
-      const password = document.getElementById("userPassword").value;
+      const nombre = document.getElementById("userName")?.value;
+      const correo = document.getElementById("userEmail")?.value;
+      const telefono = document.getElementById("userTelefono")?.value;
+      const password = document.getElementById("userPassword")?.value;
+
+      if (!nombre || !correo || !telefono || !password) {
+        alert("Por favor completa todos los campos.");
+        return;
+      }
 
       try {
         const response = await fetch("https://hotelitus.onrender.com/send-code", {
@@ -652,15 +657,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await response.json();
 
         if (response.ok && data.success) {
-          const registerModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"));
+          const registerModalEl = document.getElementById("createUserModal");
+          const registerModal = bootstrap.Modal.getInstance(registerModalEl);
           registerModal?.hide();
 
-          const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"));
-          verificationModal.show();
+          const verificationModalEl = document.getElementById("verificationModal");
+          if (verificationModalEl) {
+            const verificationModal = new bootstrap.Modal(verificationModalEl);
+            verificationModal.show();
+          }
 
           sessionStorage.setItem("pendingUser", JSON.stringify({ nombre, correo, telefono, password }));
         } else {
-          alert(data.message || "Error al enviar código.");
+          alert(data.message || "Error al enviar el código.");
         }
       } catch (err) {
         console.error(err);
@@ -673,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (verifyBtn) {
     verifyBtn.addEventListener("click", async () => {
-      const code = document.getElementById("verificationCodeInput").value;
+      const code = document.getElementById("verificationCodeInput")?.value;
       const user = JSON.parse(sessionStorage.getItem("pendingUser"));
 
       if (!code || !user) {
