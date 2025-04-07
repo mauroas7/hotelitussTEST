@@ -292,6 +292,61 @@ function setupFormValidation() {
   }
 }
 
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("loginForm");
+    const loginErrorMsg = document.getElementById("loginErrorMsg");
+
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        try {
+            const response = await fetch("https://hotelitus.onrender.com/sesion", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.status === 401) {
+                loginErrorMsg.classList.remove("d-none");
+                loginErrorMsg.textContent = "Credenciales incorrectas";
+            } else if (response.redirected) {
+                // Redirigir a la página principal si las credenciales son correctas
+                window.location.href = response.url;
+            } else {
+                loginErrorMsg.classList.remove("d-none");
+                loginErrorMsg.textContent = "Error inesperado. Intente nuevamente.";
+            }
+        } catch (error) {
+            console.error("Error en el login:", error);
+            loginErrorMsg.classList.remove("d-none");
+            loginErrorMsg.textContent = "Error de red. Intente más tarde.";
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Configura la validación de campos específicos (nombre y teléfono)
  */
