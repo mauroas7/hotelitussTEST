@@ -537,3 +537,26 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Validación para el campo de nombre (solo letras)
+    const nombreInput = document.getElementById('userName');
+    if (nombreInput) {
+      nombreInput.addEventListener('input', function(e) {
+        // Permitir letras, espacios y caracteres acentuados
+        this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, '');
+      });
+    }
+    
+    // Validación para el campo de teléfono (solo números)
+    const telefonoInput = document.getElementById('userTelefono');
+    if (telefonoInput) {
+      telefonoInput.addEventListener('input', function(e) {
+        // Permitir solo números
+        this.value = this.value.replace(/[^0-9]/g, '');
+      });
+    }
+  });
+</script>
