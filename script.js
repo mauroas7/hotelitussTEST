@@ -100,73 +100,18 @@ function initMap() {
   }
 }
 
-// Validación específica para el formulario de creación de usuario
-const createUserForm = document.getElementById("createUserForm")
-
-if (createUserForm) {
-  let verificationStep = false // Para controlar si ya se pidió código
-  let userData = {} // Para guardar temporalmente los datos del usuario
-
-  createUserForm.addEventListener("submit", async function(event) {
-    event.preventDefault()
-
-    if (!this.checkValidity()) {
-      event.stopPropagation()
-      return
-    }
-
-    // Si estamos en la etapa de verificación (ya se pidió código)
-    if (verificationStep) {
-      const enteredCode = document.getElementById("verificationCode").value
-      if (enteredCode === userData.verificationCode) {
-        alert("Código verificado. Usuario creado exitosamente.")
-        // Acá enviarías los datos al backend para guardar el usuario.
-        // Ejemplo: await fetch('/api/crear-usuario', { method: 'POST', body: JSON.stringify(userData) })
-
-        createUserForm.reset()
-        document.getElementById("verificationCodeContainer").classList.add("d-none")
-        verificationStep = false
-      } else {
-        alert("Código incorrecto. Intentá nuevamente.")
+ const createUserForm = document.getElementById("createUserForm")
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", function(event) {
+      // La validación de campos específicos se maneja en setupFieldValidation()
+      // Aquí solo verificamos si el formulario es válido en general
+      if (!this.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
       }
-      return
-    }
-
-    // Etapa 1: Enviar código de verificación
-    const email = document.getElementById("createUserEmail").value
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
-    userData = {
-      email: email,
-      name: document.getElementById("createUserName").value,
-      password: document.getElementById("createUserPassword").value,
-      verificationCode: code,
-    }
-
-    try {
-      
-     await fetch("/api/enviar-codigo", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    email: email,
-    code: code,
-    name: userData.name,
-  }),
-})
-      })
-
-      alert("Código de verificación enviado a tu correo.")
-      document.getElementById("verificationCodeContainer").classList.remove("d-none")
-      verificationStep = true
-    } catch (error) {
-      alert("Error al enviar el código. Verificá tu conexión o configuración de EmailJS.")
-      console.error("Error al enviar email:", error)
-    }
-  })
+    })
+  }
 }
-
 
 /**
  * Configura la funcionalidad del modo oscuro
