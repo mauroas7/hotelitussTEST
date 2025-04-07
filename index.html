@@ -815,61 +815,70 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Modal de Crear Usuario -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="createUserForm" action="https://hotelitus.onrender.com/create" method="POST">
-                        <div class="mb-3">
-                            <label for="userName" class="form-label">Nombre</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input type="text" name="nombre" class="form-control" id="userName" placeholder="Ingrese su nombre" required>
-                            </div>
+<!-- Modal de Crear Usuario -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm" action="https://hotelitus.onrender.com/create" method="POST">
+                    <div class="mb-3">
+                        <label for="userName" class="form-label">Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" name="nombre" class="form-control" id="userName" 
+                                   placeholder="Ingrese su nombre" 
+                                   pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" 
+                                   title="Por favor ingrese solo letras" 
+                                   required>
                         </div>
-                        <div class="mb-3">
-                            <label for="userEmail" class="form-label">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
-                            </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userEmail" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="userTelefono" class="form-label">Teléfono</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                <input type="tel" name="telefono" class="form-control" id="userTelefono" placeholder="Ingrese su teléfono" required>
-                            </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userTelefono" class="form-label">Teléfono</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="tel" name="telefono" class="form-control" id="userTelefono" 
+                                   placeholder="Ingrese su teléfono" 
+                                   pattern="[0-9]+" 
+                                   title="Por favor ingrese solo números" 
+                                   required>
                         </div>
-                        <div class="mb-3">
-                            <label for="userPassword" class="form-label">Contraseña</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
-                            </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="userPassword" class="form-label">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
                         </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
-                            <label class="form-check-label" for="termsCheck">
-                                Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-user-plus me-2"></i>Crear Usuario
-                        </button>
-                    </form>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
-                </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                        <label class="form-check-label" for="termsCheck">
+                            Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
             </div>
         </div>
     </div>
+</div>
+
 <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
