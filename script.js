@@ -280,17 +280,47 @@ function setupFormValidation() {
   
   // Validación específica para el formulario de creación de usuario
   const createUserForm = document.getElementById("createUserForm")
-  if (createUserForm) {
-    createUserForm.addEventListener("submit", function(event) {
-      // La validación de campos específicos se maneja en setupFieldValidation()
-      // Aquí solo verificamos si el formulario es válido en general
-      if (!this.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
+if (createUserForm) {
+  createUserForm.addEventListener("submit", async function(event) {
+    event.preventDefault()
+
+    if (!this.checkValidity()) {
+      this.classList.add("was-validated")
+      return
+    }
+
+    const formData = new FormData(this)
+    const userData = {
+      nombre: formData.get("nombre"),
+      correo: formData.get("correo"),
+      telefono: formData.get("telefono"),
+      password: formData.get("password")
+    }
+
+    try {
+      const response = await fetch("/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log(data.message)
+
+        // Mostrar el modal de verificación
+        const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
+        verificationModal.show()
+      } else {
+        const error = await response.json()
+        alert("Error: " + error.message)
       }
-    })
-  }
+    } catch (err) {
+      console.error("Error en la petición:", err)
+    }
+  })
 }
+
 
 /**
  * Configura la validación de campos específicos (nombre y teléfono)
