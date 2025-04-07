@@ -931,7 +931,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="loginForm" action="https://hotelitus.onrender.com/sesion" method="POST">
+                    <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
+                      Credenciales incorrectas
+                    </div>
+                    <form id="loginForm">
                         <div class="mb-3">
                             <label for="loginEmail" class="form-label">Email</label>
                             <div class="input-group">
