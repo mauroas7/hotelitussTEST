@@ -100,19 +100,6 @@ function initMap() {
   }
 }
 
- const createUserForm = document.getElementById("createUserForm")
-  if (createUserForm) {
-    createUserForm.addEventListener("submit", function(event) {
-      // La validación de campos específicos se maneja en setupFieldValidation()
-      // Aquí solo verificamos si el formulario es válido en general
-      if (!this.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    })
-  }
-}
-
 /**
  * Configura la funcionalidad del modo oscuro
  */
@@ -291,8 +278,19 @@ function setupFormValidation() {
     )
   })
   
-  
-
+  // Validación específica para el formulario de creación de usuario
+  const createUserForm = document.getElementById("createUserForm")
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", function(event) {
+      // La validación de campos específicos se maneja en setupFieldValidation()
+      // Aquí solo verificamos si el formulario es válido en general
+      if (!this.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    })
+  }
+}
 
 /**
  * Configura la validación de campos específicos (nombre y teléfono)
@@ -326,6 +324,52 @@ function setupFieldValidation() {
     })
   }
 }
+
+
+//Validacion de datos desde la base de datos para capturar la respuesta del backend y mostrar el error de "Credenciales Incorrectas"
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault(); // Evitar envío normal
+
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const errorDiv = document.getElementById("loginError");
+
+    try {
+        const response = await fetch("https://hotelitus.onrender.com/sesion", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            // Guardar en localStorage y recargar o redirigir
+            localStorage.setItem("usuarioLogueado", data.email);
+            location.reload();
+        } else if (response.status === 401) {
+            errorDiv.classList.remove("d-none");
+            errorDiv.textContent = "Credenciales incorrectas.";
+        } else {
+            errorDiv.classList.remove("d-none");
+            errorDiv.textContent = "Error al iniciar sesión. Intente más tarde.";
+        }
+    } catch (error) {
+        console.error("Error de red:", error);
+        errorDiv.classList.remove("d-none");
+        errorDiv.textContent = "Error de conexión.";
+    }
+});
+
+
+
+
+
+
+
+
 
 
 /**
