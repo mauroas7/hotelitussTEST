@@ -630,44 +630,77 @@ function deleteReserva(id) {
 }
 
  // Validación específica para el formulario de creación de usuario
-const createUserForm = document.getElementById("createUserForm")
-if (createUserForm) {
-  createUserForm.addEventListener("submit", async function(event) {
-    event.preventDefault()
+document.addEventListener("DOMContentLoaded", () => {
+  const createUserForm = document.getElementById("createUserForm");
 
-    if (!this.checkValidity()) {
-      this.classList.add("was-validated")
-      return
-    }
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
 
-    const formData = new FormData(this)
-    const userData = {
-      nombre: formData.get("nombre"),
-      correo: formData.get("correo"),
-      telefono: formData.get("telefono"),
-      password: formData.get("password")
-    }
+      const nombre = document.getElementById("userName").value;
+      const correo = document.getElementById("userEmail").value;
+      const telefono = document.getElementById("userTelefono").value;
+      const password = document.getElementById("userPassword").value;
 
-    try {
-      const response = await fetch("/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData)
-      })
+      try {
+        const response = await fetch("https://hotelitus.onrender.com/send-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre, correo, telefono, password })
+        });
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log(data.message)
+        const data = await response.json();
 
-        // Mostrar el modal de verificación
-        const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
-        verificationModal.show()
-      } else {
-        const error = await response.json()
-        alert("Error: " + error.message)
+        if (response.ok && data.success) {
+          const registerModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"));
+          registerModal?.hide();
+
+          const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"));
+          verificationModal.show();
+
+          sessionStorage.setItem("pendingUser", JSON.stringify({ nombre, correo, telefono, password }));
+        } else {
+          alert(data.message || "Error al enviar código.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error de red.");
       }
-    } catch (err) {
-      console.error("Error en la petición:", err)
-    }
-  })
-}
+    });
+  }
+
+  const verifyBtn = document.getElementById("verifyCodeBtn");
+
+  if (verifyBtn) {
+    verifyBtn.addEventListener("click", async () => {
+      const code = document.getElementById("verificationCodeInput").value;
+      const user = JSON.parse(sessionStorage.getItem("pendingUser"));
+
+      if (!code || !user) {
+        alert("Faltan datos.");
+        return;
+      }
+
+      try {
+        const response = await fetch("https://hotelitus.onrender.com/verify-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...user, code })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alert("✅ Usuario creado correctamente");
+          sessionStorage.removeItem("pendingUser");
+          location.href = "https://hotelituss1.vercel.app/";
+        } else {
+          alert(data.message || "❌ Código incorrecto");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error al verificar.");
+      }
+    });
+  }
+});
