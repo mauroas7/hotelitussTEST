@@ -3,27 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hotelituss - Experiencia de lujo y confort en el corazón de Mendoza, Argentina">
-    <meta name="keywords" content="hotel, lujo, Mendoza, Argentina, alojamiento, spa, restaurante">
-    <title>Hotelituss - Experiencia de Lujo</title>
-
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-
-    <!-- Estilos -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Hotelituss</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css">
-
-    <!-- Favicon -->
-    <link rel="icon" href="https://th.bing.com/th/id/OIG2.BQbN5r6GvZewXhI4RZDT?w=32&h=32&rs=1&pid=ImgDetMain" type="image/x-icon">
 </head>
 <body>
-    <!-- Barra de navegación -->
+
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#" aria-label="Hotelituss">
@@ -68,33 +55,32 @@
                         </a>
                     </li>
                     
-                  <!-- Perfil de usuario !-->
-<li class="nav-item dropdown" id="userProfileDropdown" style="display: none;">
-  <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="fas fa-user-circle me-1"></i>
-    <span id="userDisplayName">Usuario</span>
-  </a>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-    <li class="dropdown-header">
-      <div class="user-profile-header">
-        <div class="user-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="user-info">
-          <h6 id="userFullName">Nombre Completo</h6>
-          <p id="userEmail" class="text-muted small mb-0">correo@ejemplo.com</p>
-        </div>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-user-edit me-2"></i>Editar perfil</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i>Mis reservas</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
-  </ul>
-</li>
-
+                    <!-- Perfil de usuario -->
+                    <li class="nav-item dropdown" id="userProfileDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span id="userDisplayName">Usuario</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li class="dropdown-header">
+                                <div class="user-profile-header">
+                                    <div class="user-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="user-info">
+                                        <h6 id="userFullName">Nombre Completo</h6>
+                                        <p id="userEmail" class="text-muted small mb-0">usuario@ejemplo.com</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-edit me-2"></i>Editar perfil</a></li>
+                            <li><a class="dropdown-item" href="#mis-reservas" data-bs-toggle="modal" data-bs-target="#myReservationsModal"><i class="fas fa-history me-2"></i>Mis reservas</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -469,23 +455,7 @@
                                 <label for="guests" class="form-label">Número de huéspedes</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user-friends"></i></span>
-                                    <input type="number" class="form-control" id="guests" min="1" max="4" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Nombre completo</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                    <input type="text" class="form-control" id="name" placeholder="Ingrese su nombre" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Correo electrónico</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="email" placeholder="Ingrese su email" required>
+                                    <input type="number" class="form-control" id="guests" min="1" max="4" value="1" required>
                                 </div>
                             </div>
                         </div>
@@ -494,6 +464,7 @@
                             <textarea class="form-control" id="specialRequests" rows="3" placeholder="Indique cualquier solicitud especial que pueda tener"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-calendar-  class="btn btn-primary btn-lg w-100">
                             <i class="fas fa-calendar-check me-2"></i>Reservar ahora
                         </button>
                         <div class="reservation-info mt-3">
@@ -569,7 +540,6 @@
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
                         </div>
                         <p class="testimonial-text">"La atención al detalle en cada aspecto de nuestra estancia fue impresionante. Las habitaciones son espaciosas y elegantes. Definitivamente volveremos."</p>
                         <div class="testimonial-user">
@@ -610,73 +580,6 @@
         </div>
     </section>
 
-    <!-- Ubicación Section -->
-    <section id="ubicacion" class="py-5">
-        <div class="container">
-            <h2 class="section-title text-center" data-aos="fade-up">Nuestra Ubicación</h2>
-            <div class="section-divider mx-auto"></div>
-            <p class="section-subtitle text-center mb-5" data-aos="fade-up">Encuentre nuestro hotel en el corazón de Mendoza</p>
-
-            <div class="row">
-                <div class="col-lg-6 mb-4" data-aos="fade-right">
-                    <div id="map" class="map-container"></div>
-                </div>
-                <div class="col-lg-6 mb-4" data-aos="fade-left">
-                    <div class="location-info">
-                        <div class="location-item">
-                            <div class="location-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div>
-                                <h4>Dirección</h4>
-                                <p>Av. Emilio Civit 367, M5500 Mendoza, Argentina</p>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-icon">
-                                <i class="fas fa-phone-alt"></i>
-                            </div>
-                            <div>
-                                <h4>Teléfono</h4>
-                                <p>+54 261 423 7890</p>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h4>Email</h4>
-                                <p><a href="/cdn-cgi/l/email-protection#bfd6d1d9d0ffd7d0cbdad3d6cbcacccc91dcd0d2"><span class="__cf_email__" data-cfemail="c4adaaa2ab84aca5b0a1a8adb0b1b7b7eaa7aba9">[email&#160;protected]</span></a></p>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div>
-                                <h4>Horario de recepción</h4>
-                                <p>24 horas, todos los días</p>
-                            </div>
-                        </div>
-                        <div class="location-attractions mt-4">
-                            <h4>Atracciones cercanas</h4>
-                            <ul>
-                                <li><i class="fas fa-wine-glass-alt me-2"></i>Bodegas y viñedos (15 min)</li>
-                                <li><i class="fas fa-mountain me-2"></i>Parque San Martín (5 min)</li>
-                                <li><i class="fas fa-store me-2"></i>Centro comercial (10 min)</li>
-                                <li><i class="fas fa-plane me-2"></i>Aeropuerto Internacional (25 min)</li>
-                            </ul>
-                        </div>
-                        <a href="https://maps.google.com" target="_blank" class="btn btn-outline-primary mt-3">
-                            <i class="fas fa-directions me-2"></i>Cómo llegar
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Contacto Section -->
     <section id="contacto" class="py-5 text-center">
         <div class="container">
@@ -703,7 +606,7 @@
                                         <i class="fas fa-envelope"></i>
                                     </div>
                                     <h5>Email</h5>
-                                    <p><a href="/cdn-cgi/l/email-protection#5d3e3233293c3e29321d35322938313429282e2e733e3230"><span class="__cf_email__" data-cfemail="82e1edecf6e3e1f6edc2eaedf6e7eeebf6f7f1f1ace1edef">[email&#160;protected]</span></a></p>
+                                    <p>info@hotelituss.com</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -805,7 +708,7 @@
                     <ul class="footer-contact">
                         <li><i class="fas fa-map-marker-alt"></i> Av. Emilio Civit 367, Mendoza, Argentina</li>
                         <li><i class="fas fa-phone-alt"></i> +54 261 423 7890</li>
-                        <li><i class="fas fa-envelope"></i> <a href="/cdn-cgi/l/email-protection#5930373f361931362d3c35302d2c2a2a773a3634"><span class="__cf_email__" data-cfemail="71181f171e31191e05141d18050402025f121e1c">[email&#160;protected]</span></a></li>
+                        <li><i class="fas fa-envelope"></i> info@hotelituss.com</li>
                     </ul>
                     <div class="footer-newsletter mt-3">
                         <h6>Suscríbete a nuestro newsletter</h6>
@@ -832,123 +735,68 @@
         </div>
     </footer>
 
-    <!-- Botón de modo oscuro -->
-    <button id="darkModeToggle" class="btn position-fixed" aria-label="Cambiar modo oscuro/claro">
-        <i class="fas fa-moon"></i>
-    </button>
-
-    <!-- Botón de volver arriba -->
-    <button id="backToTop" class="btn position-fixed" aria-label="Volver arriba">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-<!-- Modal de Crear Usuario -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <!-- Modal de Mis Reservas -->
+    <div class="modal fade" id="myReservationsModal" tabindex="-1" aria-labelledby="myReservationsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-header">
+            <h5 class="modal-title" id="myReservationsModalLabel">Mis Reservas</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="reservationsLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="mt-3">Cargando tus reservas...</p>
             </div>
-            <div class="modal-body">
-                <form id="createUserForm" action="https://hotelitus.onrender.com/create" method="POST">
-                    <div class="mb-3">
-                        <label for="userName" class="form-label">Nombre</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" name="nombre" class="form-control" id="userName" 
-                                   placeholder="Ingrese su nombre" 
-                                   pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" 
-                                   title="Por favor ingrese solo letras" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userEmail" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userTelefono" class="form-label">Teléfono</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                            <input type="tel" name="telefono" class="form-control" id="userTelefono" 
-                                   placeholder="Ingrese su teléfono" 
-                                   pattern="[0-9]+" 
-                                   title="Por favor ingrese solo números" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userPassword" class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
-                        </div>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
-                        <label class="form-check-label" for="termsCheck">
-                            Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
-                    </button>
-                </form>
+            <div id="reservationsEmpty" class="text-center py-5" style="display: none;">
+              <div class="mb-4">
+                <i class="fas fa-calendar-times text-muted" style="font-size: 4rem;"></i>
+              </div>
+              <h5>No tienes reservas activas</h5>
+              <p class="text-muted">Cuando realices una reserva, aparecerá aquí.</p>
+              <a href="#reservas" class="btn btn-primary mt-3" data-bs-dismiss="modal">
+                <i class="fas fa-calendar-plus me-2"></i>Hacer una reserva
+              </a>
             </div>
-            <div class="modal-footer justify-content-center">
-                <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
+            <div id="reservationsError" class="text-center py-5" style="display: none;">
+              <div class="mb-4">
+                <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+              </div>
+              <h5>Error al cargar las reservas</h5>
+              <p class="text-muted">No pudimos cargar tus reservas. Por favor, inténtalo de nuevo más tarde.</p>
+              <button class="btn btn-primary mt-3" id="retryLoadReservations">
+                <i class="fas fa-sync-alt me-2"></i>Reintentar
+              </button>
             </div>
+            <div id="reservationsContainer" style="display: none;">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Habitación</th>
+                      <th>Fecha de entrada</th>
+                      <th>Fecha de salida</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reservationsTableBody">
+                    <!-- Reservations will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="verificationModalLabel">Verificación de código</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="text-center mb-4">
-          <div class="service-icon mb-3">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <p>Hemos enviado un código de verificación a tu correo electrónico. Por favor, introdúcelo a continuación:</p>
-        </div>
-        
-        <form id="verificationForm">
-          <div class="verification-code-container d-flex justify-content-center mb-4">
-            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus>
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input" maxlength="1">
-          </div>
-          
-          <div class="text-center mb-3">
-            <div id="verification-error" class="text-danger mb-3" style="display: none;">
-              Código incorrecto. Por favor, inténtalo de nuevo.
-            </div>
-            <button type="submit" class="btn btn-primary">Verificar</button>
-          </div>
-          
-          <div class="text-center mt-3">
-            <p class="mb-0 text-muted">¿No has recibido el código? 
-              <a href="#" id="resendCode" class="text-primary">Reenviar código</a>
-            </p>
-            <div id="countdown" class="text-muted mt-2" style="display: none;"></div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
     <!-- Modal de Iniciar Sesión -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -961,7 +809,6 @@
                     <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
                       Credenciales incorrectas
                     </div>
-                    <!-- Update the login form to prevent default submission and use our JavaScript handler -->
                     <form id="loginForm">
                         <div class="mb-3">
                             <label for="loginEmail" class="form-label">Email</label>
@@ -989,9 +836,6 @@
                             <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                         </button>
                     </form>
-                    <div id="loginError" class="alert alert-danger mt-3 d-none" role="alert">
-                        Credenciales incorrectas.
-                    </div>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <p class="mb-0">¿No tienes una cuenta? <a href="#" id="switchToCreateUser" class="text-decoration-none">Crear Usuario</a></p>
@@ -1000,11 +844,73 @@
         </div>
     </div>
 
+    <!-- Modal de Crear Usuario -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">Nombre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="nombre" class="form-control" id="userName" 
+                                       placeholder="Ingrese su nombre" 
+                                       pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" 
+                                       title="Por favor ingrese solo letras" 
+                                       required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userTelefono" class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" name="telefono" class="form-control" id="userTelefono" 
+                                       placeholder="Ingrese su teléfono" 
+                                       pattern="[0-9]+" 
+                                       title="Por favor ingrese solo números" 
+                                       required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userPassword" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
