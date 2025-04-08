@@ -879,26 +879,49 @@
     </div>
 </div>
 
-<!-- Modal para código de autenticación -->
-<div class="modal fade" id="authCodeModal" tabindex="-1" aria-labelledby="authCodeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="authCodeModalLabel">Código de Verificación</h5>
-            </div>
-            <div class="modal-body">
-                <form id="verifyCodeForm">
-                    <div class="mb-3">
-                        <label for="authCode" class="form-label">Ingrese el código enviado a su correo</label>
-                        <input type="text" id="authCode" class="form-control" name="codigo" placeholder="Código de 6 dígitos" required pattern="\d{6}">
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Verificar</button>
-                </form>
-            </div>
+<div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="verificationModalLabel">Verificación de código</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <div class="service-icon mb-3">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <p>Hemos enviado un código de verificación a tu correo electrónico. Por favor, introdúcelo a continuación:</p>
         </div>
+        
+        <form id="verificationForm">
+          <div class="verification-code-container d-flex justify-content-center mb-4">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus>
+            <input type="text" class="form-control verification-input me-2" maxlength="1">
+            <input type="text" class="form-control verification-input me-2" maxlength="1">
+            <input type="text" class="form-control verification-input me-2" maxlength="1">
+            <input type="text" class="form-control verification-input me-2" maxlength="1">
+            <input type="text" class="form-control verification-input" maxlength="1">
+          </div>
+          
+          <div class="text-center mb-3">
+            <div id="verification-error" class="text-danger mb-3" style="display: none;">
+              Código incorrecto. Por favor, inténtalo de nuevo.
+            </div>
+            <button type="submit" class="btn btn-primary">Verificar</button>
+          </div>
+          
+          <div class="text-center mt-3">
+            <p class="mb-0 text-muted">¿No has recibido el código? 
+              <a href="#" id="resendCode" class="text-primary">Reenviar código</a>
+            </p>
+            <div id="countdown" class="text-muted mt-2" style="display: none;"></div>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
-
     <!-- Modal de Iniciar Sesión -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -938,6 +961,9 @@
                             <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                         </button>
                     </form>
+                    <div id="loginError" class="alert alert-danger mt-3 d-none" role="alert">
+                        Credenciales incorrectas.
+                    </div>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <p class="mb-0">¿No tienes una cuenta? <a href="#" id="switchToCreateUser" class="text-decoration-none">Crear Usuario</a></p>
