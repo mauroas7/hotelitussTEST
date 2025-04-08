@@ -592,3 +592,35 @@ function deleteReserva(id) {
       alert("Error al eliminar la reserva.")
     })
 }
+
+
+
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+  e.preventDefault(); // Evita que el formulario se envíe normalmente
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  const errorContainer = document.getElementById("loginError");
+
+  try {
+    const response = await fetch("https://hotelitus.onrender.com/sesion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (response.ok) {
+      localStorage.setItem("usuarioLogueado", email); // Guardamos la sesión
+      window.location.href = "https://hotelituss1.vercel.app/?logged=true";
+    } else if (response.status === 401) {
+      // Mostrar mensaje de credenciales incorrectas
+      errorContainer.classList.remove("d-none");
+    } else {
+      console.error("Error inesperado al iniciar sesión");
+    }
+  } catch (err) {
+    console.error("Error al enviar datos de inicio:", err);
+  }
+});
