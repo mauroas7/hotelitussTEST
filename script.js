@@ -38,9 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Gestión de sesión de usuario
   setupUserSession()
-  
-  // Configurar funcionalidad de código de verificación
+
   setupVerificationCode()
+  setupCreateUserForm()
 })
 
 /**
@@ -280,30 +280,6 @@ function setupFormValidation() {
       false,
     )
   })
-
-  // Validación específica para el formulario de creación de usuario
-  const createUserForm = document.getElementById("createUserForm")
-  if (createUserForm) {
-    createUserForm.addEventListener("submit", function (event) {
-      event.preventDefault()
-      
-      // Check if the form is valid
-      if (this.checkValidity()) {
-        // Get form data
-        const formData = {
-          nombre: document.getElementById("userName").value,
-          correo: document.getElementById("userEmail").value,
-          telefono: document.getElementById("userTelefono").value,
-          password: document.getElementById("userPassword").value
-        }
-        
-        // Send data to backend
-        sendVerificationCode(formData)
-      }
-      
-      this.classList.add("was-validated")
-    })
-  }
 }
 
 /**
@@ -508,315 +484,37 @@ function updateActiveNavLink() {
  * Configura la gestión de sesión de usuario
  */
 function setupUserSession() {
-  const loginLink = document.getElementById("loginLink");
-  const createUserLink = document.getElementById("createUserLink");
-  const userProfileDropdown = document.getElementById("userProfileDropdown");
-  
+  const loginLink = document.getElementById("loginLink")
+  const createUserLink = document.getElementById("createUserLink")
+  const logoutBtn = document.getElementById("logoutBtn")
+
   // Detectar si viene de un login exitoso con ?logged=true
-  const urlParams = new URLSearchParams(window.location.search);
-  const loggedIn = urlParams.get("logged");
+  const urlParams = new URLSearchParams(window.location.search)
+  const loggedIn = urlParams.get("logged")
 
   if (loggedIn === "true") {
-    localStorage.setItem("userLoggedIn", "true");
-    // Guardar el email del usuario que se acaba de loguear
-    const userEmail = localStorage.getItem("usuarioLogueado");
-    if (userEmail) {
-      localStorage.setItem("currentUserEmail", userEmail);
-    }
-    window.history.replaceState({}, document.title, "/"); // Limpiar la URL
+    localStorage.setItem("userLoggedIn", "true")
+    window.history.replaceState({}, document.title, "/") // Limpiar la URL
   }
 
-  // Mostrar u ocultar elementos según estado
-  const isLogged = localStorage.getItem("userLoggedIn") === "true";
+  // Mostrar u ocultar botones según estado
+  const isLogged = localStorage.getItem("userLoggedIn") === "true"
 
   if (isLogged) {
-    if (loginLink) loginLink.style.display = "none";
-    if (createUserLink) createUserLink.style.display = "none";
-    if (userProfileDropdown) userProfileDropdown.style.display = "block";
-    
-    // Cargar datos del usuario
-    loadUserData();
+    if (loginLink) loginLink.style.display = "none"
+    if (createUserLink) createUserLink.style.display = "none"
+    if (logoutBtn) logoutBtn.style.display = "inline-block"
   } else {
-    if (loginLink) loginLink.style.display = "block";
-    if (createUserLink) createUserLink.style.display = "block";
-    if (userProfileDropdown) userProfileDropdown.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "none"
   }
 
   // Función para cerrar sesión
-  const logoutLink = document.getElementById("logoutLink");
-  if (logoutLink) {
-    logoutLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      localStorage.removeItem("userLoggedIn");
-      localStorage.removeItem("currentUserEmail");
-      localStorage.removeItem("currentUserData");
-      window.location.reload(); // Refresca la página
-    });
-  }
-}
-
-/**
- * Carga los datos del usuario desde el backend
- */
-function loadUserData() {
-  const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado");
-  
-  if (!userEmail) return;
-  
-  // Intentar cargar datos del localStorage primero (para no hacer peticiones innecesarias)
-  const cachedUserData = localStorage.getItem("currentUserData");
-  if (cachedUserData) {
-    try {
-      const userData = JSON.parse(cachedUserData);
-      updateUserProfileUI(userData);
-      return;
-    } catch (e) {
-      console.error("Error al parsear datos de usuario en caché:", e);
-    }
-  }
-  
-  // Si no hay datos en caché o hay error, cargar desde el backend
-  fetch(`${backendBaseUrl}/get-user-data`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ correo: userEmail }),
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Error al obtener datos del usuario");
-      }
-      return response.json();
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("userLoggedIn")
+      window.location.reload() // Refresca la página
     })
-    .then(data => {
-      if (data && data.success) {
-        // Guardar datos en localStorage para futuras cargas
-        localStorage.setItem("currentUserData", JSON.stringify(data.user));
-        updateUserProfileUI(data.user);
-      }
-    })
-    .catch(error => {
-      console.error("Error al cargar datos del usuario:", error);
-      // Si hay error, mostrar datos genéricos
-      updateUserProfileUI({
-        nombre: "Usuario",
-        correo: userEmail
-      });
-    });
-}
-
-/**
- * Actualiza la interfaz del perfil de usuario con los datos cargados
- */
-function updateUserProfileUI(userData) {
-  // Actualizar nombre en el botón del dropdown
-  const userDisplayName = document.getElementById("userDisplayName");
-  if (userDisplayName) {
-    userDisplayName.textContent = userData.nombre || "Usuario";
   }
-  
-  // Actualizar datos en el menú desplegable
-  const userFullName = document.getElementById("userFullName");
-  if (userFullName) {
-    userFullName.textContent = userData.nombre || "Usuario";
-  }
-  
-  const userEmail = document.getElementById("userEmail");
-  if (userEmail) {
-    userEmail.textContent = userData.correo || "";
-  }
-}
-
-/**
- * Configura la funcionalidad de entrada del código de verificación
- */
-function setupVerificationCode() {
-  const verificationInputs = document.querySelectorAll('.verification-input');
-  
-  if (verificationInputs.length > 0) {
-    // Auto-focus next input when a digit is entered
-    verificationInputs.forEach((input, index) => {
-      input.addEventListener('input', function() {
-        if (this.value.length === 1) {
-          if (index < verificationInputs.length - 1) {
-            verificationInputs[index + 1].focus();
-          }
-        }
-      });
-      
-      // Handle backspace to go to previous input
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' && !this.value && index > 0) {
-          verificationInputs[index - 1].focus();
-        }
-      });
-    });
-  }
-  
-  // Handle verification form submission
-  const verificationForm = document.getElementById('verificationForm');
-  if (verificationForm) {
-    verificationForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Get the code from all inputs
-      let code = '';
-      verificationInputs.forEach(input => {
-        code += input.value;
-      });
-      
-      // Get the email from the stored data
-      const userEmail = localStorage.getItem('pendingVerificationEmail');
-      
-      if (code.length === 6 && userEmail) {
-        verifyCode(userEmail, code);
-      } else {
-        document.getElementById('verification-error').style.display = 'block';
-      }
-    });
-  }
-  
-  // Handle resend code button
-  const resendCodeBtn = document.getElementById('resendCode');
-  if (resendCodeBtn) {
-    resendCodeBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // Get the stored user data
-      const userData = JSON.parse(localStorage.getItem('pendingUserData'));
-      
-      if (userData) {
-        // Disable the button and show countdown
-        this.style.pointerEvents = 'none';
-        this.style.opacity = '0.5';
-        
-        const countdownEl = document.getElementById('countdown');
-        countdownEl.style.display = 'block';
-        
-        let seconds = 60;
-        countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`;
-        
-        const countdownInterval = setInterval(() => {
-          seconds--;
-          countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`;
-          
-          if (seconds <= 0) {
-            clearInterval(countdownInterval);
-            this.style.pointerEvents = 'auto';
-            this.style.opacity = '1';
-            countdownEl.style.display = 'none';
-          }
-        }, 1000);
-        
-        // Resend the verification code
-        sendVerificationCode(userData);
-      }
-    });
-  }
-}
-
-/**
- * Envía el código de verificación al correo electrónico del usuario
- * @param {Object} userData - Datos del usuario incluyendo nombre, correo, teléfono y contraseña
- */
-function sendVerificationCode(userData) {
-  // Backend URL
-  const backendBaseUrl = "https://hotelitus.onrender.com";
-  
-  // Store user data for later use
-  localStorage.setItem('pendingUserData', JSON.stringify(userData));
-  localStorage.setItem('pendingVerificationEmail', userData.correo);
-  
-  // Send request to backend
-  fetch(`${backendBaseUrl}/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.success) {
-        // Show verification modal
-        if (typeof bootstrap !== "undefined") {
-          // Hide create user modal if it's open
-          const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"));
-          if (createUserModal) {
-            createUserModal.hide();
-          }
-          
-          // Show verification modal
-          setTimeout(() => {
-            const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"));
-            verificationModal.show();
-            
-            // Focus on first input
-            document.querySelector('.verification-input').focus();
-          }, 500);
-        }
-      } else {
-        alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.");
-      }
-    })
-    .catch((error) => {
-      console.error("Error al enviar datos:", error);
-      alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.");
-    });
-}
-
-/**
- * Verifica el código ingresado por el usuario
- * @param {string} email - Correo electrónico del usuario
- * @param {string} code - Código de verificación ingresado por el usuario
- */
-function verifyCode(email, code) {
-  // Backend URL
-  const backendBaseUrl = "https://hotelitus.onrender.com";
-  
-  // Send verification request
-  fetch(`${backendBaseUrl}/verify-code`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ correo: email, codigo: code }),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.success) {
-        // Hide verification modal
-        if (typeof bootstrap !== "undefined") {
-          const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"));
-          if (verificationModal) {
-            verificationModal.hide();
-          }
-        }
-        
-        // Clear stored data
-        localStorage.removeItem('pendingUserData');
-        localStorage.removeItem('pendingVerificationEmail');
-        
-        // Show success message and redirect to login
-        alert("¡Cuenta creada con éxito! Ahora puede iniciar sesión.");
-        
-        // Show login modal
-        setTimeout(() => {
-          if (typeof bootstrap !== "undefined") {
-            const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
-            loginModal.show();
-          }
-        }, 500);
-      } else {
-        // Show error message
-        document.getElementById('verification-error').style.display = 'block';
-      }
-    })
-    .catch((error) => {
-      console.error("Error al verificar código:", error);
-      document.getElementById('verification-error').style.display = 'block';
-    });
 }
 
 // URL base del backend en Render
@@ -884,67 +582,344 @@ function deleteReserva(id) {
     })
 }
 
-// Implementación mejorada del inicio de sesión con manejo de errores
-document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("loginForm")
+// Reemplazar la función de manejo del formulario de login con esta versión mejorada
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault() // Prevent default form submission
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault()
+  const email = document.getElementById("loginEmail").value
+  const password = document.getElementById("loginPassword").value
+  const errorContainer = document.getElementById("loginErrorMsg") // Use the existing error message container
 
-      // Mostrar indicador de carga
-      const submitBtn = this.querySelector('button[type="submit"]')
-      const originalBtnText = submitBtn.innerHTML
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
-      submitBtn.disabled = true
+  // Mostrar información en la consola para depuración
+  console.log("Intentando iniciar sesión con:", { email })
 
-      // Ocultar mensajes de error previos
-      const errorMsg = document.getElementById("loginErrorMsg")
-      if (errorMsg) {
-        errorMsg.classList.add("d-none")
-      }
-
-      // Obtener datos del formulario
-      const email = document.getElementById("loginEmail").value
-      const password = document.getElementById("loginPassword").value
-
-      // Usar fetch para enviar los datos al backend
-      fetch(`${backendBaseUrl}/sesion`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`)
-          }
-          return response.json()
-        })
-        .then(data => {
-          // Éxito - guardar estado de sesión y email del usuario
-          localStorage.setItem("userLoggedIn", "true")
-          localStorage.setItem("usuarioLogueado", email)
-          localStorage.setItem("currentUserEmail", email)
-          
-          // Mantener al usuario en la misma página con parámetro logged=true
-          window.location.href = window.location.origin + "/?logged=true"
-        })
-        .catch(error => {
-          console.error("Error en inicio de sesión:", error)
-          
-          // Mostrar mensaje de error
-          if (errorMsg) {
-            errorMsg.classList.remove("d-none")
-            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
-          }
-          
-          // Restaurar botón
-          submitBtn.innerHTML = originalBtnText
-          submitBtn.disabled = false
-        })
+  try {
+    // Asegurarse de que los datos se envían en el formato correcto
+    const response = await fetch("https://hotelitus.onrender.com/sesion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+      credentials: "include", // Incluir cookies en la solicitud
     })
+
+    console.log("Respuesta del servidor:", response.status)
+
+    const data = await response.json().catch(() => ({}))
+    console.log("Datos de respuesta:", data)
+
+    if (response.ok) {
+      // Success - store login state and redirect
+      localStorage.setItem("userLoggedIn", "true")
+      window.location.href = "https://hotelituss1.vercel.app/?logged=true"
+    } else if (response.status === 401) {
+      // Show error message for unauthorized
+      errorContainer.textContent = data.message || "Credenciales incorrectas"
+      errorContainer.classList.remove("d-none")
+    } else {
+      console.error("Error inesperado al iniciar sesión:", response.status)
+      errorContainer.textContent = data.message || "Error al conectar con el servidor"
+      errorContainer.classList.remove("d-none")
+    }
+  } catch (err) {
+    console.error("Error al enviar datos de inicio:", err)
+    errorContainer.textContent = "Error de conexión"
+    errorContainer.classList.remove("d-none")
   }
 })
 
+// Función para enviar el código de verificación al correo electrónico del usuario
+function sendVerificationCode(userData) {
+  // Backend URL
+  const backendBaseUrl = "https://hotelitus.onrender.com"
+
+  // Store user data for later use
+  localStorage.setItem("pendingUserData", JSON.stringify(userData))
+  localStorage.setItem("pendingVerificationEmail", userData.correo)
+
+  // Mostrar indicador de carga
+  const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando código...'
+  submitBtn.disabled = true
+
+  // Send request to backend
+  fetch(`${backendBaseUrl}/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      }
+      return response.json()
+    })
+    .then((result) => {
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      if (result.success) {
+        // Show verification modal
+        if (typeof bootstrap !== "undefined") {
+          // Hide create user modal if it's open
+          const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
+          if (createUserModal) {
+            createUserModal.hide()
+          }
+
+          // Show verification modal
+          setTimeout(() => {
+            const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
+            verificationModal.show()
+
+            // Focus on first input
+            document.querySelector(".verification-input").focus()
+          }, 500)
+        }
+      } else {
+        // Mostrar mensaje de error
+        alert(result.message || "Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+      }
+    })
+    .catch((error) => {
+      console.error("Error al enviar datos:", error)
+
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      // Mostrar mensaje de error
+      alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+    })
+}
+
+/**
+ * Verifica el código ingresado por el usuario
+ * @param {string} email - Correo electrónico del usuario
+ * @param {string} code - Código de verificación ingresado por el usuario
+ */
+function verifyCode(email, code) {
+  // Backend URL
+  const backendBaseUrl = "https://hotelitus.onrender.com"
+
+  // Mostrar indicador de carga
+  const submitBtn = document.querySelector('#verificationForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'
+  submitBtn.disabled = true
+
+  // Ocultar mensaje de error previo
+  document.getElementById("verification-error").style.display = "none"
+
+  // Send verification request
+  fetch(`${backendBaseUrl}/verify-code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: email, codigo: code }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((data) => {
+          throw new Error(data.message || "Error al verificar el código")
+        })
+      }
+      return response.json()
+    })
+    .then((result) => {
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      if (result.success) {
+        // Hide verification modal
+        if (typeof bootstrap !== "undefined") {
+          const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
+          if (verificationModal) {
+            verificationModal.hide()
+          }
+        }
+
+        // Clear stored data
+        localStorage.removeItem("pendingUserData")
+        localStorage.removeItem("pendingVerificationEmail")
+
+        // Show success message and redirect to login
+        alert("¡Cuenta creada con éxito! Ahora puede iniciar sesión.")
+
+        // Show login modal
+        setTimeout(() => {
+          if (typeof bootstrap !== "undefined") {
+            const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
+            loginModal.show()
+          }
+        }, 500)
+      } else {
+        // Show error message
+        document.getElementById("verification-error").textContent =
+          result.message || "Código incorrecto. Por favor, inténtelo de nuevo."
+        document.getElementById("verification-error").style.display = "block"
+      }
+    })
+    .catch((error) => {
+      console.error("Error al verificar código:", error)
+
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      // Show error message
+      document.getElementById("verification-error").textContent =
+        error.message || "Error al verificar el código. Por favor, inténtelo de nuevo."
+      document.getElementById("verification-error").style.display = "block"
+    })
+}
+
+/**
+ * Configura la funcionalidad de entrada del código de verificación
+ */
+function setupVerificationCode() {
+  const verificationInputs = document.querySelectorAll(".verification-input")
+
+  if (verificationInputs.length > 0) {
+    // Auto-focus next input when a digit is entered
+    verificationInputs.forEach((input, index) => {
+      input.addEventListener("input", function () {
+        if (this.value.length === 1) {
+          if (index < verificationInputs.length - 1) {
+            verificationInputs[index + 1].focus()
+          } else {
+            // Si es el último input y tiene valor, enfocar el botón de verificar
+            document.querySelector('#verificationForm button[type="submit"]').focus()
+          }
+        }
+      })
+
+      // Handle backspace to go to previous input
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !this.value && index > 0) {
+          verificationInputs[index - 1].focus()
+        }
+      })
+
+      // Permitir solo números
+      input.addEventListener("input", function () {
+        this.value = this.value.replace(/[^0-9]/g, "")
+      })
+    })
+  }
+
+  // Handle verification form submission
+  const verificationForm = document.getElementById("verificationForm")
+  if (verificationForm) {
+    verificationForm.addEventListener("submit", (e) => {
+      e.preventDefault()
+
+      // Get the code from all inputs
+      let code = ""
+      verificationInputs.forEach((input) => {
+        code += input.value
+      })
+
+      // Get the email from the stored data
+      const userEmail = localStorage.getItem("pendingVerificationEmail")
+
+      if (code.length === 6 && userEmail) {
+        verifyCode(userEmail, code)
+      } else {
+        document.getElementById("verification-error").textContent =
+          "Por favor, ingrese el código de 6 dígitos completo."
+        document.getElementById("verification-error").style.display = "block"
+      }
+    })
+  }
+
+  // Handle resend code button
+  const resendCodeBtn = document.getElementById("resendCode")
+  if (resendCodeBtn) {
+    resendCodeBtn.addEventListener("click", function (e) {
+      e.preventDefault()
+
+      // Get the stored user data
+      const userData = JSON.parse(localStorage.getItem("pendingUserData"))
+
+      if (userData) {
+        // Disable the button and show countdown
+        this.style.pointerEvents = "none"
+        this.style.opacity = "0.5"
+
+        const countdownEl = document.getElementById("countdown")
+        countdownEl.style.display = "block"
+
+        let seconds = 60
+        countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
+
+        const countdownInterval = setInterval(() => {
+          seconds--
+          countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
+
+          if (seconds <= 0) {
+            clearInterval(countdownInterval)
+            this.style.pointerEvents = "auto"
+            this.style.opacity = "1"
+            countdownEl.style.display = "none"
+          }
+        }, 1000)
+
+        // Resend the verification code
+        sendVerificationCode(userData)
+      } else {
+        alert("No se encontraron datos de usuario pendiente. Por favor, intente registrarse nuevamente.")
+
+        // Cerrar modal de verificación
+        if (typeof bootstrap !== "undefined") {
+          const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
+          if (verificationModal) {
+            verificationModal.hide()
+          }
+
+          // Mostrar modal de registro
+          setTimeout(() => {
+            const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"))
+            createUserModal.show()
+          }, 500)
+        }
+      }
+    })
+  }
+}
+
+// Validación específica para el formulario de creación de usuario
+function setupCreateUserForm() {
+  const createUserForm = document.getElementById("createUserForm")
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", function (event) {
+      event.preventDefault()
+
+      // Check if the form is valid
+      if (this.checkValidity()) {
+        // Get form data
+        const formData = {
+          nombre: document.getElementById("userName").value,
+          correo: document.getElementById("userEmail").value,
+          telefono: document.getElementById("userTelefono").value,
+          password: document.getElementById("userPassword").value,
+        }
+
+        // Send data to backend
+        sendVerificationCode(formData)
+      }
+
+      this.classList.add("was-validated")
+    })
+  }
+}
