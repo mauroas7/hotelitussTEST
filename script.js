@@ -511,7 +511,6 @@ function setupUserSession() {
   const loginLink = document.getElementById("loginLink");
   const createUserLink = document.getElementById("createUserLink");
   const userProfileDropdown = document.getElementById("userProfileDropdown");
-  const reservarBtn = document.getElementById("reservarBtn");
   
   // Detectar si viene de un login exitoso con ?logged=true
   const urlParams = new URLSearchParams(window.location.search);
@@ -537,26 +536,10 @@ function setupUserSession() {
     
     // Cargar datos del usuario
     loadUserData();
-    
-    // Habilitar botón de reserva si existe
-    if (reservarBtn) {
-      reservarBtn.addEventListener("click", handleReservation);
-    }
   } else {
     if (loginLink) loginLink.style.display = "block";
     if (createUserLink) createUserLink.style.display = "block";
     if (userProfileDropdown) userProfileDropdown.style.display = "none";
-    
-    // Si el usuario no está logueado y hace clic en reservar, mostrar modal de login
-    if (reservarBtn) {
-      reservarBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (typeof bootstrap !== "undefined") {
-          const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
-          loginModal.show();
-        }
-      });
-    }
   }
 
   // Función para cerrar sesión
@@ -570,68 +553,6 @@ function setupUserSession() {
       window.location.reload(); // Refresca la página
     });
   }
-}
-
-/**
- * Maneja el proceso de reserva
- */
-function handleReservation(e) {
-  e.preventDefault();
-  
-  // Obtener datos del formulario de reserva si existe
-  const reservaForm = document.getElementById("reservaForm");
-  if (reservaForm) {
-    // Verificar si el formulario es válido
-    if (!reservaForm.checkValidity()) {
-      reservaForm.classList.add("was-validated");
-      return;
-    }
-    
-    // Obtener datos del formulario
-    const formData = new FormData(reservaForm);
-    const reservaData = {
-      correo: localStorage.getItem("currentUserEmail"),
-      fechaIngreso: formData.get("fechaIngreso"),
-      fechaSalida: formData.get("fechaSalida"),
-      cantidadPersonas: formData.get("cantidadPersonas"),
-      tipoHabitacion: formData.get("tipoHabitacion")
-    };
-    
-    // Enviar datos al backend usando la función existente
-    createReserva(reservaData);
-  } else {
-    // Si no hay formulario, redirigir a la página de reservas
-    window.location.href = "#reservas";
-  }
-}
-
-// Función para crear una nueva reserva (POST) - Usar la existente
-function createReserva(data) {
-  fetch(`${backendBaseUrl}/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("✅ Reserva creada:", result)
-      alert("Reserva creada con éxito.")
-      
-      // Opcional: redirigir a una página de confirmación o mostrar un modal
-      if (typeof bootstrap !== "undefined") {
-        const reservaExitoModal = document.getElementById("reservaExitoModal");
-        if (reservaExitoModal) {
-          const modal = new bootstrap.Modal(reservaExitoModal);
-          modal.show();
-        }
-      }
-    })
-    .catch((error) => {
-      console.error("❌ Error al crear la reserva:", error)
-      alert("Error al crear la reserva.")
-    })
 }
 
 /**
@@ -1026,3 +947,4 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
