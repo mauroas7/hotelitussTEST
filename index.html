@@ -824,7 +824,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="createUserForm" action="https://hotelitus.onrender.com/create" method="POST">
+               <form id="createUserForm">
                     <div class="mb-3">
                         <label for="userName" class="form-label">Nombre</label>
                         <div class="input-group">
@@ -978,5 +978,78 @@
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="script.js"></script>
+    <script>
+// 1. Enviar datos del registro al backend
+document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const nombre = document.getElementById('userName').value.trim();
+    const correo = document.getElementById('userEmail').value.trim();
+    const telefono = document.getElementById('userTelefono').value.trim();
+    const password = document.getElementById('userPassword').value;
+
+    const res = await fetch('https://hotelitus.onrender.com/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, correo, telefono, password })
+    });
+
+    if (res.ok) {
+        localStorage.setItem('correo', correo); // Guardar para verificación
+        const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+        modal.show(); // Mostrar modal de código
+    } else {
+        alert('Hubo un error al crear el usuario');
+    }
+});
+
+
+// 2. Verificar código
+document.getElementById('verificationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const inputs = document.querySelectorAll('.verification-input');
+    let codigo = '';
+    inputs.forEach(input => codigo += input.value.trim());
+
+    const correo = localStorage.getItem('correo');
+
+    const res = await fetch('https://hotelitus.onrender.com/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo, codigo })
+    });
+
+    const data = await res.json();
+
+    if (data.verificado) {
+        alert('Cuenta verificada correctamente');
+        location.href = 'https://hotelituss1.vercel.app/';
+    } else {
+        document.getElementById('verification-error').style.display = 'block';
+    }
+});
+
+
+// 3. Reenviar código
+document.getElementById('resendCode').addEventListener('click', async function(e) {
+    e.preventDefault();
+
+    const correo = localStorage.getItem('correo');
+
+    const res = await fetch('https://hotelitus.onrender.com/resend-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo })
+    });
+
+    if (res.ok) {
+        alert('Código reenviado al correo');
+    } else {
+        alert('No se pudo reenviar el código');
+    }
+});
+</script>
+
 </body>
 </html>
