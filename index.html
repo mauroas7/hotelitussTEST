@@ -919,20 +919,21 @@
             <i class="fas fa-shield-alt"></i>
           </div>
           <p>Hemos enviado un código de verificación a tu correo electrónico. Por favor, introdúcelo a continuación:</p>
+          <p class="small text-muted">El código expirará en 10 minutos</p>
         </div>
         
         <form id="verificationForm">
           <div class="verification-code-container d-flex justify-content-center mb-4">
-            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus>
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input" maxlength="1">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="form-control verification-input me-2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" class="form-control verification-input" maxlength="1" inputmode="numeric" pattern="[0-9]">
           </div>
           
           <div class="text-center mb-3">
-            <div id="verification-error" class="text-danger mb-3" style="display: none;">
+            <div id="verification-error" class="alert alert-danger mb-3" style="display: none;">
               Código incorrecto. Por favor, inténtalo de nuevo.
             </div>
             <button type="submit" class="btn btn-primary">Verificar</button>
@@ -949,6 +950,7 @@
     </div>
   </div>
 </div>
+
     <!-- Modal de Iniciar Sesión -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
