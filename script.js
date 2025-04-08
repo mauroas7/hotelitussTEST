@@ -1,626 +1,309 @@
-// Esperar a que el DOM esté completamente cargado
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   // Inicializar AOS (Animate On Scroll)
-  initAOS()
+  AOS.init({
+    duration: 800,
+    easing: "ease-in-out",
+    once: true,
+    mirror: false,
+  });
 
-  // Inicializar el mapa si existe el elemento
-  initMap()
-
-  // Configurar el modo oscuro
-  setupDarkMode()
-
-  // Configurar el botón de volver arriba
-  setupBackToTop()
-
-  // Configurar navegación suave
-  setupSmoothScrolling()
-
-  // Configurar modales
-  setupModals()
-
-  // Configurar validación de formularios
-  setupFormValidation()
-
-  // Inicializar tooltips de Bootstrap
-  initTooltips()
-
-  // Configurar animación de contadores
-  setupCounterAnimation()
-
-  // Manejar navegación responsiva
-  handleResponsiveNav()
-
-  // Detectar scroll para cambiar estilo de navbar
-  handleNavbarScroll()
-  
-  // Configurar validación de campos específicos
-  setupFieldValidation()
-  
-  // Gestión de sesión de usuario
-  setupUserSession()
-})
-
-/**
- * Inicializa la biblioteca AOS para animaciones al hacer scroll
- */
-function initAOS() {
-  if (typeof AOS !== "undefined") {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      offset: 100,
-    })
-  } else {
-    console.warn("AOS is not defined. Make sure it is properly imported.")
-  }
-}
-
-/**
- * Inicializa el mapa de Leaflet si existe el elemento en la página
- */
-function initMap() {
-  // Coordenadas de Avenida Emilio Civit 367, Mendoza, Argentina
-  const hotelLatitude = -32.88789
-  const hotelLongitude = -68.855
-
-  const mapElement = document.getElementById("map")
-  if (mapElement) {
-    try {
-      if (typeof L !== "undefined") {
-        const map = L.map("map").setView([hotelLatitude, hotelLongitude], 15)
-
-        // Agregar capa de OpenStreetMap
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map)
-
-        // Agregar un marcador para el hotel
-        const hotelIcon = L.icon({
-          iconUrl: "https://cdn.mapmarker.io/api/v1/pin?size=50&background=%23c8a97e&icon=fa-hotel&color=%23FFFFFF",
-          iconSize: [50, 50],
-          iconAnchor: [25, 50],
-          popupAnchor: [0, -50],
-        })
-
-        L.marker([hotelLatitude, hotelLongitude], { icon: hotelIcon })
-          .addTo(map)
-          .bindPopup("<strong>Hotelituss</strong><br>Avenida Emilio Civit 367<br>Mendoza, Argentina")
-          .openPopup()
-
-        // Forzar actualización del mapa después de que se cargue completamente
-        setTimeout(() => {
-          map.invalidateSize()
-        }, 500)
-      } else {
-        console.warn("Leaflet (L) is not defined. Make sure it is properly imported.")
-      }
-    } catch (error) {
-      console.error("Error al inicializar el mapa:", error)
-    }
-  }
-}
-
-/**
- * Configura la funcionalidad del modo oscuro
- */
-function setupDarkMode() {
-  const darkModeToggle = document.getElementById("darkModeToggle")
-
-  if (darkModeToggle) {
-    // Hacer visible el botón inmediatamente sin esperar ninguna condición
-    darkModeToggle.style.opacity = "1"
-    darkModeToggle.style.visibility = "visible"
-
-    darkModeToggle.addEventListener("click", function () {
-      document.body.classList.toggle("dark-mode")
-      const icon = this.querySelector("i")
-
-      if (document.body.classList.contains("dark-mode")) {
-        icon.classList.remove("fa-moon")
-        icon.classList.add("fa-sun")
-        localStorage.setItem("darkMode", "enabled")
-      } else {
-        icon.classList.remove("fa-sun")
-        icon.classList.add("fa-moon")
-        localStorage.setItem("darkMode", "disabled")
-      }
-    })
-
-    // Verificar preferencia de modo oscuro guardada
-    if (localStorage.getItem("darkMode") === "enabled") {
-      document.body.classList.add("dark-mode")
-      const icon = darkModeToggle.querySelector("i")
-      if (icon) {
-        icon.classList.remove("fa-moon")
-        icon.classList.add("fa-sun")
-      }
-    }
-  }
-}
-
-/**
- * Configura el botón de volver arriba
- */
-function setupBackToTop() {
-  const backToTopButton = document.getElementById("backToTop")
-
-  if (backToTopButton) {
-    // Mostrar/ocultar botón según la posición de scroll
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 300) {
-        backToTopButton.classList.add("show")
-      } else {
-        backToTopButton.classList.remove("show")
-      }
-    })
-
-    // Acción de volver arriba al hacer clic
-    backToTopButton.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    })
-
-    // Verificar posición inicial
-    if (window.scrollY > 300) {
-      backToTopButton.classList.add("show")
-    }
-  }
-}
-
-/**
- * Configura la navegación suave para enlaces internos
- */
-function setupSmoothScrolling() {
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      const href = this.getAttribute("href")
-      if (href !== "#" && document.querySelector(href)) {
-        e.preventDefault()
-        document.querySelector(href).scrollIntoView({
-          behavior: "smooth",
-        })
-      }
-    })
-  })
-}
-
-/**
- * Configura los modales de inicio de sesión y creación de usuario
- */
-function setupModals() {
-  // Manejar la apertura del modal de crear usuario
-  const createUserLink = document.getElementById("createUserLink")
-  if (createUserLink) {
-    createUserLink.addEventListener("click", (e) => {
-      e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
-        const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"))
-        createUserModal.show()
-      } else {
-        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-      }
-    })
-  }
-
-  // Manejar la apertura del modal de iniciar sesión
-  const loginLink = document.getElementById("loginLink")
-  if (loginLink) {
-    loginLink.addEventListener("click", (e) => {
-      e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
-        const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
-        loginModal.show()
-      } else {
-        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-      }
-    })
-  }
-
-  // Cambiar de modal de inicio de sesión a crear usuario
-  const switchToCreateUser = document.getElementById("switchToCreateUser")
-  if (switchToCreateUser) {
-    switchToCreateUser.addEventListener("click", (e) => {
-      e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
-        const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
-        if (loginModal) {
-          loginModal.hide()
-          setTimeout(() => {
-            const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"))
-            createUserModal.show()
-          }, 500)
-        }
-      } else {
-        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-      }
-    })
-  }
-
-  // Cambiar de modal de crear usuario a inicio de sesión
-  const switchToLogin = document.getElementById("switchToLogin")
-  if (switchToLogin) {
-    switchToLogin.addEventListener("click", (e) => {
-      e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
-        const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
-        if (createUserModal) {
-          createUserModal.hide()
-          setTimeout(() => {
-            const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
-            loginModal.show()
-          }, 500)
-        }
-      } else {
-        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-      }
-    })
-  }
-}
-
-/**
- * Configura la validación de formularios
- */
-function setupFormValidation() {
-  const forms = document.querySelectorAll(".needs-validation")
-  Array.from(forms).forEach((form) => {
-    form.addEventListener(
-      "submit",
-      (event) => {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add("was-validated")
-      },
-      false,
-    )
-  })
-  
-  // Validación específica para el formulario de creación de usuario
-  const createUserForm = document.getElementById("createUserForm")
-  if (createUserForm) {
-    createUserForm.addEventListener("submit", function(event) {
-      // La validación de campos específicos se maneja en setupFieldValidation()
-      // Aquí solo verificamos si el formulario es válido en general
-      if (!this.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    })
-  }
-}
-
-/**
- * Configura la validación de campos específicos (nombre y teléfono)
- */
-function setupFieldValidation() {
-  // Validación para el campo de nombre (solo letras)
-  const nombreInput = document.getElementById("userName")
-  if (nombreInput) {
-    // Añadir atributos de validación
-    nombreInput.setAttribute("pattern", "[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+")
-    nombreInput.setAttribute("title", "Por favor ingrese solo letras")
-    
-    // Validar mientras el usuario escribe
-    nombreInput.addEventListener("input", function() {
-      // Permitir letras, espacios y caracteres acentuados
-      this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, "")
-    })
-  }
-  
-  // Validación para el campo de teléfono (solo números)
-  const telefonoInput = document.getElementById("userTelefono")
-  if (telefonoInput) {
-    // Añadir atributos de validación
-    telefonoInput.setAttribute("pattern", "[0-9]+")
-    telefonoInput.setAttribute("title", "Por favor ingrese solo números")
-    
-    // Validar mientras el usuario escribe
-    telefonoInput.addEventListener("input", function() {
-      // Permitir solo números
-      this.value = this.value.replace(/[^0-9]/g, "")
-    })
-  }
-}
-
-
-/**
- * Inicializa los tooltips de Bootstrap
- */
-function initTooltips() {
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-  if (tooltipTriggerList.length > 0) {
-    try {
-      if (typeof bootstrap !== "undefined") {
-        const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
-      } else {
-        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-      }
-    } catch (error) {
-      console.error("Error al inicializar tooltips:", error)
-    }
-  }
-}
-
-/**
- * Configura la animación de contadores para números
- */
-function setupCounterAnimation() {
-  // Función para animar contadores
-  function animateCounter(el, target) {
-    let count = 0
-    const speed = 2000 / target // 2 segundos para llegar al objetivo
-    const counter = setInterval(() => {
-      count++
-      el.textContent = count
-      if (count >= target) {
-        clearInterval(counter)
-      }
-    }, speed)
-  }
-
-  // Iniciar animación cuando el elemento sea visible
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.target.classList.contains("years")) {
-          const targetValue = Number.parseInt(entry.target.textContent) || 0
-          if (targetValue > 0) {
-            animateCounter(entry.target, targetValue)
-            observer.unobserve(entry.target)
-          }
-        }
-      })
-    })
-
-    document.querySelectorAll(".years").forEach((el) => {
-      observer.observe(el)
-    })
-  } else {
-    // Fallback para navegadores que no soportan IntersectionObserver
-    document.querySelectorAll(".years").forEach((el) => {
-      const targetValue = Number.parseInt(el.textContent) || 0
-      if (targetValue > 0) {
-        animateCounter(el, targetValue)
-      }
-    })
-  }
-}
-
-/**
- * Maneja la navegación responsiva
- */
-function handleResponsiveNav() {
-  const navbarToggler = document.querySelector(".navbar-toggler")
-  const navbarCollapse = document.querySelector(".navbar-collapse")
-
-  if (navbarToggler && navbarCollapse) {
-    // Cerrar menú al hacer clic en un enlace en móvil
-    document.querySelectorAll(".navbar-nav .nav-link").forEach((link) => {
-      link.addEventListener("click", () => {
-        if (window.innerWidth < 992) {
-          try {
-            if (typeof bootstrap !== "undefined") {
-              const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse)
-              if (bsCollapse) {
-                bsCollapse.hide()
-              }
-            } else {
-              console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-              navbarCollapse.classList.remove("show")
-            }
-          } catch (error) {
-            console.error("Error al cerrar el menú móvil:", error)
-            // Fallback manual si bootstrap no está disponible
-            navbarCollapse.classList.remove("show")
-          }
-        }
-      })
-    })
-  }
-}
-
-/**
- * Detecta cuando la navbar debe cambiar de estilo al hacer scroll y actualiza el enlace activo
- */
-function handleNavbarScroll() {
-  const navbar = document.querySelector(".navbar")
-
-  if (navbar) {
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 50) {
-        navbar.classList.add("scrolled")
-      } else {
-        navbar.classList.remove("scrolled")
-      }
-
-      // Actualizar el enlace activo basado en la posición de scroll
-      updateActiveNavLink()
-    })
-
-    // Aplicar clase inicial según la posición actual
+  // Navbar scroll
+  const navbar = document.querySelector(".navbar");
+  window.addEventListener("scroll", function () {
     if (window.scrollY > 50) {
-      navbar.classList.add("scrolled")
+      navbar.classList.add("scrolled");
+    } else {
+      navbar.classList.remove("scrolled");
     }
+  });
 
-    // Inicializar el enlace activo
-    updateActiveNavLink()
-  }
-}
-
-/**
- * Actualiza el enlace activo en la navegación basado en la posición de scroll
- */
-function updateActiveNavLink() {
-  // Obtener todas las secciones
-  const sections = document.querySelectorAll("section[id], header[id]")
-  const navLinks = document.querySelectorAll(".navbar-nav .nav-link:not(.btn)")
-
-  // Determinar qué sección está actualmente visible
-  let currentSection = ""
-  const scrollPosition = window.scrollY + 200 // Offset para mejor detección
-
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop
-    const sectionHeight = section.offsetHeight
-
-    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-      currentSection = section.getAttribute("id")
+  // Botón de volver arriba
+  const backToTopButton = document.getElementById("backToTop");
+  window.addEventListener("scroll", function () {
+    if (window.scrollY > 300) {
+      backToTopButton.classList.add("show");
+    } else {
+      backToTopButton.classList.remove("show");
     }
-  })
+  });
 
-  // Actualizar la clase activa en los enlaces de navegación
-  navLinks.forEach((link) => {
-    link.classList.remove("active")
-    const href = link.getAttribute("href")
-    if (href === `#${currentSection}`) {
-      link.classList.add("active")
+  backToTopButton.addEventListener("click", function () {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+
+  // Modo oscuro
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  const body = document.body;
+  const isDarkMode = localStorage.getItem("darkMode") === "enabled";
+
+  if (isDarkMode) {
+    body.classList.add("dark-mode");
+    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+
+  darkModeToggle.addEventListener("click", function () {
+    body.classList.toggle("dark-mode");
+    if (body.classList.contains("dark-mode")) {
+      localStorage.setItem("darkMode", "enabled");
+      darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+      localStorage.setItem("darkMode", "disabled");
+      darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
     }
-  })
+  });
 
-  // Si estamos al principio de la página, activar el enlace de inicio
-  if (window.scrollY < 100) {
-    navLinks.forEach((link) => {
-      link.classList.remove("active")
-      if (link.getAttribute("href") === "#inicio") {
-        link.classList.add("active")
-      }
-    })
-  }
-}
+  // Inicializar mapa de Leaflet
+  if (document.getElementById("map")) {
+    const map = L.map("map").setView([-32.8897, -68.8458], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
 
-/**
- * Configura la gestión de sesión de usuario
- */
-function setupUserSession() {
-  const loginLink = document.getElementById("loginLink")
-  const createUserLink = document.getElementById("createUserLink")
-  const logoutBtn = document.getElementById("logoutBtn")
-
-  // Detectar si viene de un login exitoso con ?logged=true
-  const urlParams = new URLSearchParams(window.location.search)
-  const loggedIn = urlParams.get("logged")
-
-  if (loggedIn === "true") {
-    localStorage.setItem("userLoggedIn", "true")
-    window.history.replaceState({}, document.title, "/") // Limpiar la URL
-  }
-
-  // Mostrar u ocultar botones según estado
-  const isLogged = localStorage.getItem("userLoggedIn") === "true"
-
-  if (isLogged) {
-    if (loginLink) loginLink.style.display = "none"
-    if (createUserLink) createUserLink.style.display = "none"
-    if (logoutBtn) logoutBtn.style.display = "inline-block"
-  } else {
-    if (logoutBtn) logoutBtn.style.display = "none"
-  }
-
-  // Función para cerrar sesión
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("userLoggedIn")
-      window.location.reload() // Refresca la página
-    })
-  }
-}
-
-// URL base del backend en Render
-const backendBaseUrl = "https://hotelitus.onrender.com"
-
-// Función para crear una nueva reserva (POST)
-function createReserva(data) {
-  fetch(`${backendBaseUrl}/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("✅ Reserva creada:", result)
-      alert("Reserva creada con éxito.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al crear la reserva:", error)
-      alert("Error al crear la reserva.")
-    })
-}
-
-// Función para obtener todas las reservas (GET)
-function getReservas() {
-  fetch(`${backendBaseUrl}/select`)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("📋 Reservas obtenidas:", data)
-      // TODO: mostrar los datos en una tabla o lista en el DOM
-    })
-    .catch((error) => {
-      console.error("❌ Error al obtener reservas:", error)
-      alert("Error al obtener reservas.")
-    })
-}
-
-// Función para actualizar una reserva (GET con query params)
-function updateReserva(id, nuevoNombre) {
-  fetch(`${backendBaseUrl}/update?id=${id}&nombre=${nuevoNombre}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🔄 Reserva actualizada:", result)
-      alert("Reserva actualizada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al actualizar reserva:", error)
-      alert("Error al actualizar la reserva.")
-    })
-}
-
-// Función para eliminar una reserva (GET con query param)
-function deleteReserva(id) {
-  fetch(`${backendBaseUrl}/delete?id=${id}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🗑️ Reserva eliminada:", result)
-      alert("Reserva eliminada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al eliminar reserva:", error)
-      alert("Error al eliminar la reserva.")
-    })
-}
-
-
-
-document.getElementById("loginForm").addEventListener("submit", async function (e) {
-  e.preventDefault(); // Evita que el formulario se envíe normalmente
-
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-  const errorContainer = document.getElementById("loginError");
-
-  try {
-    const response = await fetch("https://hotelitus.onrender.com/sesion", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
+    const hotelIcon = L.icon({
+      iconUrl:
+        "https://cdn.mapmarker.io/api/v1/pin?size=50&background=%23c8a97e&icon=fa-hotel&color=%23FFFFFF",
+      iconSize: [50, 50],
+      iconAnchor: [25, 50],
+      popupAnchor: [0, -50],
     });
 
-    if (response.ok) {
-      localStorage.setItem("usuarioLogueado", email); // Guardamos la sesión
-      window.location.href = "https://hotelituss1.vercel.app/?logged=true";
-    } else if (response.status === 401) {
-      // Mostrar mensaje de credenciales incorrectas
-      errorContainer.classList.remove("d-none");
-    } else {
-      console.error("Error inesperado al iniciar sesión");
-    }
-  } catch (err) {
-    console.error("Error al enviar datos de inicio:", err);
+    L.marker([-32.8897, -68.8458], { icon: hotelIcon })
+      .addTo(map)
+      .bindPopup(
+        "<b>Hotelituss</b><br>Av. Emilio Civit 367<br>Mendoza, Argentina"
+      )
+      .openPopup();
+  }
+
+  // Modales de login y registro
+  const loginLink = document.getElementById("loginLink");
+  const createUserLink = document.getElementById("createUserLink");
+  const switchToLogin = document.getElementById("switchToLogin");
+  const switchToCreateUser = document.getElementById("switchToCreateUser");
+
+  if (loginLink) {
+    loginLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      const loginModal = new bootstrap.Modal(
+        document.getElementById("loginModal")
+      );
+      loginModal.show();
+    });
+  }
+
+  if (createUserLink) {
+    createUserLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      const createUserModal = new bootstrap.Modal(
+        document.getElementById("createUserModal")
+      );
+      createUserModal.show();
+    });
+  }
+
+  if (switchToLogin) {
+    switchToLogin.addEventListener("click", function (e) {
+      e.preventDefault();
+      const createUserModal = bootstrap.Modal.getInstance(
+        document.getElementById("createUserModal")
+      );
+      createUserModal.hide();
+      setTimeout(function () {
+        const loginModal = new bootstrap.Modal(
+          document.getElementById("loginModal")
+        );
+        loginModal.show();
+      }, 500);
+    });
+  }
+
+  if (switchToCreateUser) {
+    switchToCreateUser.addEventListener("click", function (e) {
+      e.preventDefault();
+      const loginModal = bootstrap.Modal.getInstance(
+        document.getElementById("loginModal")
+      );
+      loginModal.hide();
+      setTimeout(function () {
+        const createUserModal = new bootstrap.Modal(
+          document.getElementById("createUserModal")
+        );
+        createUserModal.show();
+      }, 500);
+    });
+  }
+
+  // Verificación de código
+  const verificationInputs = document.querySelectorAll('.verification-input');
+  if (verificationInputs.length > 0) {
+    verificationInputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= 0 && e.key <= 9) {
+          if (index < verificationInputs.length - 1) {
+            verificationInputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace') {
+          if (index > 0) {
+            verificationInputs[index - 1].focus();
+          }
+        }
+      });
+    });
+  }
+
+  // Reenvío de código
+  const resendCodeBtn = document.getElementById('resendCode');
+  const countdownEl = document.getElementById('countdown');
+  
+  if (resendCodeBtn) {
+    resendCodeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Deshabilitar el botón
+      this.classList.add('disabled');
+      
+      // Mostrar cuenta regresiva
+      countdownEl.style.display = 'block';
+      countdownEl.classList.add('counting');
+      
+      let seconds = 30;
+      countdownEl.textContent = `Podrás reenviar el código en ${seconds} segundos`;
+      
+      const countdownInterval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = `Podrás reenviar el código en ${seconds} segundos`;
+        
+        if (seconds <= 0) {
+          clearInterval(countdownInterval);
+          resendCodeBtn.classList.remove('disabled');
+          countdownEl.style.display = 'none';
+          countdownEl.classList.remove('counting');
+        }
+      }, 1000);
+      
+      // Aquí iría la lógica para reenviar el código
+      console.log('Código reenviado');
+    });
+  }
+
+  // Formulario de verificación
+  const verificationForm = document.getElementById('verificationForm');
+  if (verificationForm) {
+    verificationForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Recoger el código
+      let code = '';
+      verificationInputs.forEach(input => {
+        code += input.value;
+      });
+      
+      // Aquí iría la validación del código
+      if (code === '123456') { // Ejemplo de código válido
+        // Redirigir o mostrar mensaje de éxito
+        console.log('Código verificado correctamente');
+        
+        // Cerrar modal de verificación
+        const verificationModal = bootstrap.Modal.getInstance(
+          document.getElementById('verificationModal')
+        );
+        if (verificationModal) {
+          verificationModal.hide();
+        }
+      } else {
+        // Mostrar error
+        document.getElementById('verification-error').style.display = 'block';
+      }
+    });
+  }
+
+  // Formulario de creación de usuario
+  const createUserForm = document.getElementById("createUserForm");
+  if (createUserForm) {
+    createUserForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      // Recoger datos del formulario
+      const formData = new FormData(createUserForm);
+      const userData = {
+        nombre: formData.get('nombre'),
+        correo: formData.get('correo'),
+        telefono: formData.get('telefono'),
+        password: formData.get('password')
+      };
+      
+      // Enviar datos al servidor (simulado)
+      console.log('Enviando datos de usuario:', userData);
+      
+      // Mostrar modal de verificación
+      const createUserModal = bootstrap.Modal.getInstance(
+        document.getElementById('createUserModal')
+      );
+      createUserModal.hide();
+      
+      setTimeout(() => {
+        const verificationModal = new bootstrap.Modal(
+          document.getElementById('verificationModal')
+        );
+        verificationModal.show();
+      }, 500);
+    });
+  }
+
+  // Formulario de inicio de sesión
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      // Recoger datos del formulario
+      const formData = new FormData(loginForm);
+      const loginData = {
+        email: formData.get('email'),
+        password: formData.get('password')
+      };
+      
+      // Enviar datos al servidor (simulado)
+      console.log('Enviando datos de inicio de sesión:', loginData);
+      
+      // Simulación de inicio de sesión exitoso
+      const loginModal = bootstrap.Modal.getInstance(
+        document.getElementById('loginModal')
+      );
+      loginModal.hide();
+      
+      // Mostrar botón de cerrar sesión y ocultar botones de login/registro
+      document.getElementById('logoutBtn').style.display = 'block';
+      document.getElementById('loginLink').style.display = 'none';
+      document.getElementById('createUserLink').style.display = 'none';
+      
+      // Guardar estado de sesión
+      localStorage.setItem('isLoggedIn', 'true');
+    });
+  }
+
+  // Botón de cerrar sesión
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
+      // Ocultar botón de cerrar sesión y mostrar botones de login/registro
+      this.style.display = 'none';
+      document.getElementById('loginLink').style.display = 'block';
+      document.getElementById('createUserLink').style.display = 'block';
+      
+      // Eliminar estado de sesión
+      localStorage.removeItem('isLoggedIn');
+    });
+  }
+
+  // Verificar si el usuario está logueado al cargar la página
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('loginLink').style.display = 'none';
+    document.getElementById('createUserLink').style.display = 'none';
   }
 });
