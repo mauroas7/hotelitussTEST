@@ -136,12 +136,6 @@ a:hover {
   font-size: 1.8rem;
 }
 
-.brand-text {
-  font-family: var(--font-primary);
-  font-weight: 700;
-  color: var(--dark-color);
-}
-
 .logo {
   height: 50px;
   width: auto;
@@ -685,7 +679,7 @@ a:hover {
 }
 
 .location-info {
-  padding: 1.5rem;
+  padding: 2rem;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   height: 100%;
@@ -694,7 +688,7 @@ a:hover {
 
 .location-item {
   display: flex;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .location-icon {
@@ -705,7 +699,7 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 1.25rem;
+  margin-right: 1rem;
   flex-shrink: 0;
 }
 
@@ -808,10 +802,6 @@ footer {
   font-size: 1.5rem;
 }
 
-.footer-text {
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .social-icons {
   margin-top: 1.5rem;
 }
@@ -884,16 +874,8 @@ footer h5::after {
 
 .footer-contact li i {
   color: var(--primary-color);
-  margin-right: 1.25rem;
+  margin-right: 0.75rem;
   margin-top: 0.25rem;
-}
-
-.footer-contact li span {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.footer-contact li a {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .footer-newsletter input {
@@ -923,7 +905,7 @@ footer h5::after {
 }
 
 .footer-bottom-links a {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.85rem;
 }
 
