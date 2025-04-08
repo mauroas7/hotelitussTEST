@@ -259,98 +259,38 @@ function setupModals() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Mostrar el modal de Crear Usuario al hacer click
-  const createUserLink = document.getElementById("createUserLink");
-  if (createUserLink) {
-    createUserLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"));
-      createUserModal.show();
-    });
-  }
-
-  // Manejo del formulario de creación de usuario
-  const createUserForm = document.getElementById("createUserForm");
+/**
+ * Configura la validación de formularios
+ */
+function setupFormValidation() {
+  const forms = document.querySelectorAll(".needs-validation")
+  Array.from(forms).forEach((form) => {
+    form.addEventListener(
+      "submit",
+      (event) => {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add("was-validated")
+      },
+      false,
+    )
+  })
+  
+  // Validación específica para el formulario de creación de usuario
+  const createUserForm = document.getElementById("createUserForm")
   if (createUserForm) {
-    createUserForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (!createUserForm.checkValidity()) {
-        e.stopPropagation();
-        createUserForm.classList.add("was-validated");
-        return;
+    createUserForm.addEventListener("submit", function(event) {
+      // La validación de campos específicos se maneja en setupFieldValidation()
+      // Aquí solo verificamos si el formulario es válido en general
+      if (!this.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
       }
-
-      const nombre = document.getElementById("userName").value.trim();
-      const correo = document.getElementById("userEmail").value.trim();
-      const telefono = document.getElementById("userTelefono").value.trim();
-      const password = document.getElementById("userPassword").value;
-
-      try {
-        const response = await fetch("https://hotelitus.onrender.com/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre, correo, telefono, password }),
-        });
-
-        if (response.ok) {
-          localStorage.setItem("correo", correo);
-
-          const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"));
-          verificationModal.show();
-        } else {
-          alert("Ocurrió un error al crear el usuario.");
-        }
-      } catch (err) {
-        console.error("Error en el envío:", err);
-        alert("No se pudo conectar con el servidor.");
-      }
-    });
+    })
   }
-
-  // Manejo del formulario de verificación
-  const verificationForm = document.getElementById("verificationForm");
-  if (verificationForm) {
-    verificationForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const codigo = document.getElementById("verificationCode").value.trim();
-      const correo = localStorage.getItem("correo");
-
-      if (!codigo || !correo) {
-        alert("Faltan datos para verificar.");
-        return;
-      }
-
-      try {
-        const response = await fetch("https://hotelitus.onrender.com/verify-code", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ correo, codigo }),
-        });
-
-        if (response.ok) {
-          alert("Usuario verificado correctamente");
-
-          const modal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"));
-          modal.hide();
-
-          createUserForm.reset();
-          verificationForm.reset();
-          createUserForm.classList.remove("was-validated");
-
-          localStorage.removeItem("correo");
-        } else {
-          alert("Código incorrecto o expirado");
-        }
-      } catch (err) {
-        console.error("Error en verificación:", err);
-        alert("No se pudo verificar el código.");
-      }
-    });
-  }
-});
-
+}
 
 /**
  * Configura la validación de campos específicos (nombre y teléfono)
@@ -684,27 +624,3 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     console.error("Error al enviar datos de inicio:", err);
   }
 });
-
-document.getElementById('verificationForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const inputs = document.querySelectorAll('.verification-input');
-    let codigo = '';
-    inputs.forEach(input => codigo += input.value.trim());
-
-    const correo = localStorage.getItem('correo');
-
-    const res = await fetch('https://hotelitus.onrender.com/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo, codigo })
-    });
-
-    const data = await res.json();
-
-    if (data.verificado) {
-        alert('Cuenta verificada correctamente');
-        // redireccionar o cerrar modal
-    } else {
-        document.getElementById('verification-error').style.display = 'block';
-    }
