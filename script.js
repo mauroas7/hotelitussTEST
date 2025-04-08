@@ -508,36 +508,123 @@ function updateActiveNavLink() {
  * Configura la gestión de sesión de usuario
  */
 function setupUserSession() {
-  const loginLink = document.getElementById("loginLink")
-  const createUserLink = document.getElementById("createUserLink")
-  const logoutBtn = document.getElementById("logoutBtn")
-
+  const loginLink = document.getElementById("loginLink");
+  const createUserLink = document.getElementById("createUserLink");
+  const userProfileDropdown = document.getElementById("userProfileDropdown");
+  
   // Detectar si viene de un login exitoso con ?logged=true
-  const urlParams = new URLSearchParams(window.location.search)
-  const loggedIn = urlParams.get("logged")
+  const urlParams = new URLSearchParams(window.location.search);
+  const loggedIn = urlParams.get("logged");
 
   if (loggedIn === "true") {
-    localStorage.setItem("userLoggedIn", "true")
-    window.history.replaceState({}, document.title, "/") // Limpiar la URL
+    localStorage.setItem("userLoggedIn", "true");
+    // Guardar el email del usuario que se acaba de loguear
+    const userEmail = localStorage.getItem("usuarioLogueado");
+    if (userEmail) {
+      localStorage.setItem("currentUserEmail", userEmail);
+    }
+    window.history.replaceState({}, document.title, "/"); // Limpiar la URL
   }
 
-  // Mostrar u ocultar botones según estado
-  const isLogged = localStorage.getItem("userLoggedIn") === "true"
+  // Mostrar u ocultar elementos según estado
+  const isLogged = localStorage.getItem("userLoggedIn") === "true";
 
   if (isLogged) {
-    if (loginLink) loginLink.style.display = "none"
-    if (createUserLink) createUserLink.style.display = "none"
-    if (logoutBtn) logoutBtn.style.display = "inline-block"
+    if (loginLink) loginLink.style.display = "none";
+    if (createUserLink) createUserLink.style.display = "none";
+    if (userProfileDropdown) userProfileDropdown.style.display = "block";
+    
+    // Cargar datos del usuario
+    loadUserData();
   } else {
-    if (logoutBtn) logoutBtn.style.display = "none"
+    if (loginLink) loginLink.style.display = "block";
+    if (createUserLink) createUserLink.style.display = "block";
+    if (userProfileDropdown) userProfileDropdown.style.display = "none";
   }
 
   // Función para cerrar sesión
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("userLoggedIn")
-      window.location.reload() // Refresca la página
+  const logoutLink = document.getElementById("logoutLink");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("userLoggedIn");
+      localStorage.removeItem("currentUserEmail");
+      localStorage.removeItem("currentUserData");
+      window.location.reload(); // Refresca la página
+    });
+  }
+}
+
+/**
+ * Carga los datos del usuario desde el backend
+ */
+function loadUserData() {
+  const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado");
+  
+  if (!userEmail) return;
+  
+  // Intentar cargar datos del localStorage primero (para no hacer peticiones innecesarias)
+  const cachedUserData = localStorage.getItem("currentUserData");
+  if (cachedUserData) {
+    try {
+      const userData = JSON.parse(cachedUserData);
+      updateUserProfileUI(userData);
+      return;
+    } catch (e) {
+      console.error("Error al parsear datos de usuario en caché:", e);
+    }
+  }
+  
+  // Si no hay datos en caché o hay error, cargar desde el backend
+  fetch(`${backendBaseUrl}/get-user-data`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: userEmail }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Error al obtener datos del usuario");
+      }
+      return response.json();
     })
+    .then(data => {
+      if (data && data.success) {
+        // Guardar datos en localStorage para futuras cargas
+        localStorage.setItem("currentUserData", JSON.stringify(data.user));
+        updateUserProfileUI(data.user);
+      }
+    })
+    .catch(error => {
+      console.error("Error al cargar datos del usuario:", error);
+      // Si hay error, mostrar datos genéricos
+      updateUserProfileUI({
+        nombre: "Usuario",
+        correo: userEmail
+      });
+    });
+}
+
+/**
+ * Actualiza la interfaz del perfil de usuario con los datos cargados
+ */
+function updateUserProfileUI(userData) {
+  // Actualizar nombre en el botón del dropdown
+  const userDisplayName = document.getElementById("userDisplayName");
+  if (userDisplayName) {
+    userDisplayName.textContent = userData.nombre || "Usuario";
+  }
+  
+  // Actualizar datos en el menú desplegable
+  const userFullName = document.getElementById("userFullName");
+  if (userFullName) {
+    userFullName.textContent = userData.nombre || "Usuario";
+  }
+  
+  const userEmail = document.getElementById("userEmail");
+  if (userEmail) {
+    userEmail.textContent = userData.correo || "";
   }
 }
 
@@ -813,39 +900,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Ocultar mensajes de error previos
       const errorMsg = document.getElementById("loginErrorMsg")
-      errorMsg.classList.add("d-none")
+      if (errorMsg) {
+        errorMsg.classList.add("d-none")
+      }
 
       // Obtener datos del formulario
       const email = document.getElementById("loginEmail").value
       const password = document.getElementById("loginPassword").value
 
-      // Usar XMLHttpRequest en lugar de fetch para mejor compatibilidad
-      const xhr = new XMLHttpRequest()
-      xhr.open("POST", "https://hotelitus.onrender.com/sesion", true)
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4) {
-          // Restaurar botón
-          submitBtn.innerHTML = originalBtnText
-          submitBtn.disabled = false
-
-          console.log("Status:", xhr.status)
-          console.log("Response:", xhr.responseText)
-
-          if (xhr.status === 200) {
-            // Éxito - guardar estado de sesión y redirigir
-            localStorage.setItem("userLoggedIn", "true")
-            window.location.href = "https://hotelituss1.vercel.app/?logged=true"
-          } else {
-            // Mostrar mensaje de error
+      // Usar fetch para enviar los datos al backend
+      fetch(`${backendBaseUrl}/sesion`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`)
+          }
+          return response.json()
+        })
+        .then(data => {
+          // Éxito - guardar estado de sesión y email del usuario
+          localStorage.setItem("userLoggedIn", "true")
+          localStorage.setItem("usuarioLogueado", email)
+          localStorage.setItem("currentUserEmail", email)
+          
+          // Redirigir a la página principal con parámetro logged=true
+          window.location.href = "https://hotelituss1.vercel.app/?logged=true"
+        })
+        .catch(error => {
+          console.error("Error en inicio de sesión:", error)
+          
+          // Mostrar mensaje de error
+          if (errorMsg) {
             errorMsg.classList.remove("d-none")
             errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
           }
-        }
-      }
-
-      // Enviar datos en formato de formulario
-      xhr.send(`email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`)
+          
+          // Restaurar botón
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+        })
     })
   }
 })
+
