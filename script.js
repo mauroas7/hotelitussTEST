@@ -237,7 +237,10 @@ function setupModals() {
         }
       } else {
         console.warn("Bootstrap is not defined. Make sure it is properly imported.")
-        navbarCollapse.classList.remove("show")
+        const navbarCollapse = document.querySelector(".navbar-collapse")
+        if (navbarCollapse) {
+          navbarCollapse.classList.remove("show")
+        }
       }
     })
   }
@@ -285,6 +288,10 @@ function setupFormValidation() {
   // Specific validation for the user creation form
   const createUserForm = document.getElementById("createUserForm")
   if (createUserForm) {
+    // Eliminar los atributos action y method para evitar el envío directo del formulario
+    createUserForm.removeAttribute("action")
+    createUserForm.removeAttribute("method")
+
     createUserForm.addEventListener("submit", function (event) {
       event.preventDefault()
 
@@ -649,6 +656,8 @@ function setupVerificationCode() {
  * @param {Object} userData - Datos del usuario incluyendo nombre, correo, teléfono y contraseña
  */
 function sendVerificationCode(userData) {
+  console.log("Enviando datos para verificación:", userData)
+
   // Backend URL
   const backendBaseUrl = "https://hotelitus.onrender.com"
 
@@ -656,15 +665,29 @@ function sendVerificationCode(userData) {
   localStorage.setItem("pendingUserData", JSON.stringify(userData))
   localStorage.setItem("pendingVerificationEmail", userData.correo)
 
-  // Usar XMLHttpRequest en lugar de fetch para mantener consistencia con el login
+  // Crear un objeto FormData para enviar los datos como application/json
   const xhr = new XMLHttpRequest()
   xhr.open("POST", `${backendBaseUrl}/create`, true)
   xhr.setRequestHeader("Content-Type", "application/json")
+
+  // Mostrar indicador de carga
+  const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : ""
+  if (submitBtn) {
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+    submitBtn.disabled = true
+  }
 
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
       console.log("Status:", xhr.status)
       console.log("Response:", xhr.responseText)
+
+      // Restaurar botón
+      if (submitBtn) {
+        submitBtn.innerHTML = originalBtnText
+        submitBtn.disabled = false
+      }
 
       if (xhr.status === 200) {
         try {
@@ -684,7 +707,10 @@ function sendVerificationCode(userData) {
                 verificationModal.show()
 
                 // Focus on first input
-                document.querySelector(".verification-input").focus()
+                const firstInput = document.querySelector(".verification-input")
+                if (firstInput) {
+                  firstInput.focus()
+                }
               }, 500)
             }
           } else {
@@ -703,6 +729,12 @@ function sendVerificationCode(userData) {
   xhr.onerror = () => {
     console.error("Error de red al enviar datos")
     alert("Error de conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.")
+
+    // Restaurar botón
+    if (submitBtn) {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+    }
   }
 
   // Enviar los datos como JSON
@@ -715,8 +747,24 @@ function sendVerificationCode(userData) {
  * @param {string} code - Código de verificación ingresado por el usuario
  */
 function verifyCode(email, code) {
+  console.log("Verificando código:", email, code)
+
   // Backend URL
   const backendBaseUrl = "https://hotelitus.onrender.com"
+
+  // Mostrar indicador de carga
+  const submitBtn = document.querySelector('#verificationForm button[type="submit"]')
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : ""
+  if (submitBtn) {
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'
+    submitBtn.disabled = true
+  }
+
+  // Ocultar mensaje de error previo
+  const errorElement = document.getElementById("verification-error")
+  if (errorElement) {
+    errorElement.style.display = "none"
+  }
 
   // Usar XMLHttpRequest en lugar de fetch
   const xhr = new XMLHttpRequest()
@@ -727,6 +775,12 @@ function verifyCode(email, code) {
     if (xhr.readyState === 4) {
       console.log("Status:", xhr.status)
       console.log("Response:", xhr.responseText)
+
+      // Restaurar botón
+      if (submitBtn) {
+        submitBtn.innerHTML = originalBtnText
+        submitBtn.disabled = false
+      }
 
       if (xhr.status === 200) {
         try {
@@ -756,21 +810,35 @@ function verifyCode(email, code) {
             }, 500)
           } else {
             // Show error message
-            document.getElementById("verification-error").style.display = "block"
+            if (errorElement) {
+              errorElement.style.display = "block"
+            }
           }
         } catch (e) {
           console.error("Error al parsear respuesta:", e)
-          document.getElementById("verification-error").style.display = "block"
+          if (errorElement) {
+            errorElement.style.display = "block"
+          }
         }
       } else {
-        document.getElementById("verification-error").style.display = "block"
+        if (errorElement) {
+          errorElement.style.display = "block"
+        }
       }
     }
   }
 
   xhr.onerror = () => {
     console.error("Error de red al verificar código")
-    document.getElementById("verification-error").style.display = "block"
+    if (errorElement) {
+      errorElement.style.display = "block"
+    }
+
+    // Restaurar botón
+    if (submitBtn) {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+    }
   }
 
   // Enviar los datos como JSON
@@ -858,7 +926,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Ocultar mensajes de error previos
       const errorMsg = document.getElementById("loginErrorMsg")
-      errorMsg.classList.add("d-none")
+      if (errorMsg) {
+        errorMsg.classList.add("d-none")
+      }
 
       // Obtener datos del formulario
       const email = document.getElementById("loginEmail").value
@@ -867,7 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Usar XMLHttpRequest en lugar de fetch para mejor compatibilidad
       const xhr = new XMLHttpRequest()
       xhr.open("POST", "https://hotelitus.onrender.com/sesion", true)
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+      xhr.setRequestHeader("Content-Type", "application/json")
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           // Restaurar botón
@@ -884,14 +954,27 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = window.location.origin + "/?logged=true"
           } else {
             // Mostrar mensaje de error
-            errorMsg.classList.remove("d-none")
-            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
+            if (errorMsg) {
+              errorMsg.classList.remove("d-none")
+              errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
+            }
           }
         }
       }
 
-      // Enviar datos en formato de formulario
-      xhr.send(`email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`)
+      xhr.onerror = () => {
+        console.error("Error de red al iniciar sesión")
+        submitBtn.innerHTML = originalBtnText
+        submitBtn.disabled = false
+
+        if (errorMsg) {
+          errorMsg.classList.remove("d-none")
+          errorMsg.textContent = "Error de conexión. Por favor, verifica tu conexión a internet."
+        }
+      }
+
+      // Enviar datos como JSON
+      xhr.send(JSON.stringify({ email, password }))
     })
   }
 })
