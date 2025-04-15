@@ -357,7 +357,7 @@ function setupReservationForm() {
         correo: email,
         solicitudes_especiales: specialRequests,
         estado: "pendiente",
-        usuario_id: localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado"),
+        // No usamos el correo como ID, lo obtendremos del objeto userData en createReservation
       }
 
       // Enviar datos al servidor
@@ -392,6 +392,31 @@ function createReservation(data) {
   const originalBtnText = submitBtn.innerHTML
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
   submitBtn.disabled = true
+
+  // CORRECCIÓN: Obtener el ID del usuario desde localStorage si está disponible
+  const userDataStr = localStorage.getItem("currentUserData")
+  if (userDataStr) {
+    try {
+      const userData = JSON.parse(userDataStr)
+      // Asegurarse de que estamos enviando el ID del usuario, no su correo
+      if (userData.id) {
+        data.usuario_id = userData.id
+      } else if (userData.usuario_id) {
+        data.usuario_id = userData.usuario_id
+      } else {
+        // Si no hay ID, usar el correo como fallback
+        data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+        console.warn("No se encontró ID de usuario, usando correo como fallback")
+      }
+    } catch (e) {
+      console.error("Error al parsear datos de usuario:", e)
+      // Fallback al método anterior
+      data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+    }
+  } else {
+    // Fallback al método anterior
+    data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+  }
 
   fetch(`${backendBaseUrl}/reservar`, {
     method: "POST",
@@ -447,18 +472,39 @@ function createReservation(data) {
 
 // Función para obtener las reservas del usuario actual
 function getUserReservations() {
+  // CORRECCIÓN: Intentar obtener el ID del usuario primero
+  let userId = null
+  const userDataStr = localStorage.getItem("currentUserData")
+  
+  if (userDataStr) {
+    try {
+      const userData = JSON.parse(userDataStr)
+      if (userData.id) {
+        userId = userData.id
+      } else if (userData.usuario_id) {
+        userId = userData.usuario_id
+      }
+    } catch (e) {
+      console.error("Error al parsear datos de usuario:", e)
+    }
+  }
+  
+  // Si no hay ID, usar el correo como fallback
   const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
 
-  if (!userEmail) {
+  if (!userId && !userEmail) {
     return Promise.reject("No hay usuario logueado")
   }
+
+  // Enviar el ID si está disponible, de lo contrario enviar el correo
+  const payload = userId ? { id: userId } : { correo: userEmail }
 
   return fetch(`${backendBaseUrl}/user-reservations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ correo: userEmail }),
+    body: JSON.stringify(payload),
   }).then((response) => {
     if (!response.ok) {
       throw new Error("Error al obtener reservas")
@@ -1270,11 +1316,16 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.json()
         })
         .then((data) => {
-          // Éxito - guardar estado de sesión y email del usuario
+          // CORRECCIÓN: Guardar el objeto de usuario completo, no solo el email
           localStorage.setItem("userLoggedIn", "true")
           localStorage.setItem("usuarioLogueado", email)
+          
+          // Guardar el objeto de usuario completo si está disponible
+          if (data.user) {
+            localStorage.setItem("currentUserData", JSON.stringify(data.user))
+          }
 
-          // CAMBIO AQUÍ: Mantener al usuario en la misma página con parámetro logged=true
+          // Mantener al usuario en la misma página con parámetro logged=true
           window.location.href = window.location.origin + "/?logged=true"
         })
         .catch((error) => {
