@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (xhr.status === 200) {
             // Éxito - guardar estado de sesión y redirigir
             localStorage.setItem("userLoggedIn", "true")
-            window.location.href = "https://hotelituss1.vercel.app/?logged=true"
+            window.location.href = "https://hotelituss-test.vercel.app/?logged=true"
           } else {
             // Mostrar mensaje de error
             errorMsg.classList.remove("d-none")
