@@ -720,6 +720,10 @@ function setupVerificationCode() {
  * Envía el código de verificación al correo electrónico del usuario
  * @param {Object} userData - Datos del usuario incluyendo nombre, correo, teléfono y contraseña
  */
+/**
+ * Envía el código de verificación al correo electrónico del usuario
+ * @param {Object} userData - Datos del usuario incluyendo nombre, correo, teléfono y contraseña
+ */
 function sendVerificationCode(userData) {
   // Backend URL
   const backendBaseUrl = "https://hotelitus.onrender.com";
@@ -736,7 +740,12 @@ function sendVerificationCode(userData) {
     },
     body: JSON.stringify(userData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then((result) => {
       if (result.success) {
         // Show verification modal
@@ -927,7 +936,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.setItem("userLoggedIn", "true")
           localStorage.setItem("usuarioLogueado", email)
           
-          // CAMBIO AQUÍ: Mantener al usuario en la misma página con parámetro logged=true
+          // Mantener al usuario en la misma página con parámetro logged=true
           window.location.href = window.location.origin + "/?logged=true"
         })
         .catch(error => {
@@ -946,4 +955,3 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
-
