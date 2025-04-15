@@ -928,8 +928,8 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.setItem("usuarioLogueado", email)
           localStorage.setItem("currentUserEmail", email)
           
-          // Mantener al usuario en la misma página con parámetro logged=true
-          window.location.href = window.location.origin + "/?logged=true"
+          // Redirigir a la página principal con parámetro logged=true
+          window.location.href = "https://hotelituss1.vercel.app/?logged=true"
         })
         .catch(error => {
           console.error("Error en inicio de sesión:", error)
@@ -947,3 +947,4 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
