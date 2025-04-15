@@ -929,7 +929,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.setItem("currentUserEmail", email)
           
           // Redirigir a la página principal con parámetro logged=true
-          window.location.href = "https://hotelituss1.vercel.app/?logged=true"
+          window.location.href = "https://hotelituss-test.vercel.app/?logged=true"
         })
         .catch(error => {
           console.error("Error en inicio de sesión:", error)
