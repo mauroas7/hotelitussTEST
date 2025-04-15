@@ -926,10 +926,9 @@ document.addEventListener("DOMContentLoaded", () => {
           // Éxito - guardar estado de sesión y email del usuario
           localStorage.setItem("userLoggedIn", "true")
           localStorage.setItem("usuarioLogueado", email)
-          localStorage.setItem("currentUserEmail", email)
           
-          // Redirigir a la página principal con parámetro logged=true
-          window.location.href = "https://hotelituss-test.vercel.app/?logged=true"
+          // CAMBIO AQUÍ: Mantener al usuario en la misma página con parámetro logged=true
+          window.location.href = window.location.origin + "/?logged=true"
         })
         .catch(error => {
           console.error("Error en inicio de sesión:", error)
