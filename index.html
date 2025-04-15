@@ -67,33 +67,9 @@
                             <i class="fas fa-user-plus me-1"></i>Crear Usuario
                         </a>
                     </li>
-                
-                
-<li class="nav-item dropdown" id="userProfileDropdown" style="display: none;">
-  <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="fas fa-user-circle me-1"></i>
-    <span id="userDisplayName">Usuario</span>
-  </a>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-    <li class="dropdown-header">
-      <div class="user-profile-header">
-        <div class="user-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="user-info">
-          <h6 id="userFullName">Nombre Completo</h6>
-          <p id="userEmail" class="text-muted small mb-0">correo@ejemplo.com</p>
-        </div>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-user-edit me-2"></i>Editar perfil</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i>Mis reservas</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
-  </ul>
-</li>
+                    
+                    <!-- Botón visible SOLO cuando está logueado -->
+                   <button id="logoutBtn" class="btn btn-danger" style="display: none;">Cerrar sesión</button>
 
                 </ul>
             </div>
