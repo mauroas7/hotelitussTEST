@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Inicializa la biblioteca AOS para animaciones al hacer scroll
  */
 function initAOS() {
+  const AOS = window.AOS // Declare the AOS variable
   if (typeof AOS !== "undefined") {
     AOS.init({
       duration: 1000,
@@ -78,6 +79,7 @@ function initMap() {
   const hotelLongitude = -68.855
 
   const mapElement = document.getElementById("map")
+  const L = window.L // Declare the L variable
   if (mapElement) {
     try {
       if (typeof L !== "undefined") {
@@ -209,6 +211,7 @@ function setupModals() {
   if (createUserLink) {
     createUserLink.addEventListener("click", (e) => {
       e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
       if (typeof bootstrap !== "undefined") {
         const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"))
         createUserModal.show()
@@ -223,6 +226,7 @@ function setupModals() {
   if (loginLink) {
     loginLink.addEventListener("click", (e) => {
       e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
       if (typeof bootstrap !== "undefined") {
         const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
         loginModal.show()
@@ -237,6 +241,7 @@ function setupModals() {
   if (switchToCreateUser) {
     switchToCreateUser.addEventListener("click", (e) => {
       e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
       if (typeof bootstrap !== "undefined") {
         const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
         if (loginModal) {
@@ -257,6 +262,7 @@ function setupModals() {
   if (switchToLogin) {
     switchToLogin.addEventListener("click", (e) => {
       e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
       if (typeof bootstrap !== "undefined") {
         const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
         if (createUserModal) {
@@ -331,6 +337,7 @@ function setupReservationForm() {
       if (!isLoggedIn) {
         // Mostrar modal de login si no está logueado
         alert("Debe iniciar sesión para realizar una reserva")
+        const bootstrap = window.bootstrap // Declare the bootstrap variable
         if (typeof bootstrap !== "undefined") {
           const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
           loginModal.show()
@@ -347,6 +354,12 @@ function setupReservationForm() {
       const email = document.getElementById("email").value
       const specialRequests = document.getElementById("specialRequests").value
 
+      // Validar fechas
+      if (new Date(checkIn) >= new Date(checkOut)) {
+        alert("La fecha de salida debe ser posterior a la fecha de entrada")
+        return
+      }
+
       // Crear objeto con datos de la reserva
       const reservationData = {
         fecha_inicio: checkIn,
@@ -357,7 +370,6 @@ function setupReservationForm() {
         correo: email,
         solicitudes_especiales: specialRequests,
         estado: "pendiente",
-        // No usamos el correo como ID, lo obtendremos del objeto userData en createReservation
       }
 
       // Enviar datos al servidor
@@ -393,29 +405,18 @@ function createReservation(data) {
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
   submitBtn.disabled = true
 
-  // CORRECCIÓN: Obtener el ID del usuario desde localStorage si está disponible
+  // Obtener el correo del usuario desde localStorage
   const userDataStr = localStorage.getItem("currentUserData")
   if (userDataStr) {
     try {
       const userData = JSON.parse(userDataStr)
-      // Asegurarse de que estamos enviando el ID del usuario, no su correo
-      if (userData.id) {
-        data.usuario_id = userData.id
-      } else if (userData.usuario_id) {
-        data.usuario_id = userData.usuario_id
-      } else {
-        // Si no hay ID, usar el correo como fallback
-        data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
-        console.warn("No se encontró ID de usuario, usando correo como fallback")
+      // Asegurarse de que estamos enviando el correo del usuario
+      if (userData.correo) {
+        data.correo = userData.correo
       }
     } catch (e) {
       console.error("Error al parsear datos de usuario:", e)
-      // Fallback al método anterior
-      data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
     }
-  } else {
-    // Fallback al método anterior
-    data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
   }
 
   fetch(`${backendBaseUrl}/reservar`, {
@@ -427,7 +428,7 @@ function createReservation(data) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Error al crear la reserva")
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       return response.json()
     })
@@ -436,26 +437,30 @@ function createReservation(data) {
       submitBtn.innerHTML = originalBtnText
       submitBtn.disabled = false
 
-      // Mostrar mensaje de éxito
-      alert("¡Reserva creada con éxito!")
+      if (result.success) {
+        // Mostrar mensaje de éxito
+        alert("¡Reserva creada con éxito!")
 
-      // Limpiar formulario
-      document.querySelector(".reservation-form").reset()
+        // Limpiar formulario
+        document.querySelector(".reservation-form").reset()
 
-      // Pre-llenar con datos del usuario nuevamente
-      const userDataStr = localStorage.getItem("currentUserData")
-      if (userDataStr) {
-        try {
-          const userData = JSON.parse(userDataStr)
-          if (document.getElementById("name")) {
-            document.getElementById("name").value = userData.nombre || ""
+        // Pre-llenar con datos del usuario nuevamente
+        const userDataStr = localStorage.getItem("currentUserData")
+        if (userDataStr) {
+          try {
+            const userData = JSON.parse(userDataStr)
+            if (document.getElementById("name")) {
+              document.getElementById("name").value = userData.nombre || ""
+            }
+            if (document.getElementById("email")) {
+              document.getElementById("email").value = userData.correo || ""
+            }
+          } catch (e) {
+            console.error("Error al parsear datos de usuario:", e)
           }
-          if (document.getElementById("email")) {
-            document.getElementById("email").value = userData.correo || ""
-          }
-        } catch (e) {
-          console.error("Error al parsear datos de usuario:", e)
         }
+      } else {
+        alert("Error al crear la reserva: " + (result.message || "Error desconocido"))
       }
     })
     .catch((error) => {
@@ -472,23 +477,21 @@ function createReservation(data) {
 
 // Función para obtener las reservas del usuario actual
 function getUserReservations() {
-  // CORRECCIÓN: Intentar obtener el ID del usuario primero
+  // Intentar obtener el ID del usuario primero
   let userId = null
   const userDataStr = localStorage.getItem("currentUserData")
-  
+
   if (userDataStr) {
     try {
       const userData = JSON.parse(userDataStr)
       if (userData.id) {
         userId = userData.id
-      } else if (userData.usuario_id) {
-        userId = userData.usuario_id
       }
     } catch (e) {
       console.error("Error al parsear datos de usuario:", e)
     }
   }
-  
+
   // Si no hay ID, usar el correo como fallback
   const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
 
@@ -507,7 +510,7 @@ function getUserReservations() {
     body: JSON.stringify(payload),
   }).then((response) => {
     if (!response.ok) {
-      throw new Error("Error al obtener reservas")
+      throw new Error(`Error ${response.status}: ${response.statusText}`)
     }
     return response.json()
   })
@@ -523,6 +526,7 @@ function setupMyReservations() {
       e.preventDefault()
 
       // Mostrar modal de reservas
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
       if (typeof bootstrap !== "undefined") {
         const myReservationsModal = new bootstrap.Modal(document.getElementById("myReservationsModal"))
         myReservationsModal.show()
@@ -553,7 +557,7 @@ function loadUserReservations() {
   // Obtener reservas del usuario
   getUserReservations()
     .then((data) => {
-      if (data.success && data.reservations.length > 0) {
+      if (data.success && data.reservations && data.reservations.length > 0) {
         // Mostrar reservas
         let html = ""
 
@@ -657,7 +661,7 @@ function cancelReservation(reservaId) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Error al cancelar la reserva")
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       return response.json()
     })
@@ -667,7 +671,7 @@ function cancelReservation(reservaId) {
         // Recargar reservas
         loadUserReservations()
       } else {
-        alert("Error al cancelar la reserva: " + result.message)
+        alert("Error al cancelar la reserva: " + (result.message || "Error desconocido"))
       }
     })
     .catch((error) => {
@@ -738,6 +742,7 @@ function setupFieldValidation() {
 function initTooltips() {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
   if (tooltipTriggerList.length > 0) {
+    const bootstrap = window.bootstrap // Declare the bootstrap variable
     try {
       if (typeof bootstrap !== "undefined") {
         const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
@@ -807,6 +812,7 @@ function handleResponsiveNav() {
     document.querySelectorAll(".navbar-nav .nav-link").forEach((link) => {
       link.addEventListener("click", () => {
         if (window.innerWidth < 992) {
+          const bootstrap = window.bootstrap // Declare the bootstrap variable
           try {
             if (typeof bootstrap !== "undefined") {
               const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse)
@@ -1133,6 +1139,7 @@ function sendVerificationCode(userData) {
     .then((result) => {
       if (result.success) {
         // Show verification modal
+        const bootstrap = window.bootstrap // Declare the bootstrap variable
         if (typeof bootstrap !== "undefined") {
           // Hide create user modal if it's open
           const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
@@ -1180,6 +1187,7 @@ function verifyCode(email, code) {
     .then((result) => {
       if (result.success) {
         // Hide verification modal
+        const bootstrap = window.bootstrap // Declare the bootstrap variable
         if (typeof bootstrap !== "undefined") {
           const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
           if (verificationModal) {
@@ -1196,6 +1204,7 @@ function verifyCode(email, code) {
 
         // Show login modal
         setTimeout(() => {
+          const bootstrap = window.bootstrap // Declare the bootstrap variable
           if (typeof bootstrap !== "undefined") {
             const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
             loginModal.show()
@@ -1214,68 +1223,6 @@ function verifyCode(email, code) {
 
 // URL base del backend en Render
 const backendBaseUrl = "https://hotelitus.onrender.com"
-
-// Función para crear una nueva reserva (POST)
-function createReserva(data) {
-  fetch(`${backendBaseUrl}/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("✅ Reserva creada:", result)
-      alert("Reserva creada con éxito.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al crear la reserva:", error)
-      alert("Error al crear la reserva.")
-    })
-}
-
-// Función para obtener todas las reservas (GET)
-function getReservas() {
-  fetch(`${backendBaseUrl}/select`)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("📋 Reservas obtenidas:", data)
-      // TODO: mostrar los datos en una tabla o lista en el DOM
-    })
-    .catch((error) => {
-      console.error("❌ Error al obtener reservas:", error)
-      alert("Error al obtener reservas.")
-    })
-}
-
-// Función para actualizar una reserva (GET con query params)
-function updateReserva(id, nuevoNombre) {
-  fetch(`${backendBaseUrl}/update?id=${id}&nombre=${nuevoNombre}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🔄 Reserva actualizada:", result)
-      alert("Reserva actualizada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al actualizar reserva:", error)
-      alert("Error al actualizar la reserva.")
-    })
-}
-
-// Función para eliminar una reserva (GET con query param)
-function deleteReserva(id) {
-  fetch(`${backendBaseUrl}/delete?id=${id}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🗑️ Reserva eliminada:", result)
-      alert("Reserva eliminada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al eliminar reserva:", error)
-      alert("Error al eliminar la reserva.")
-    })
-}
 
 // Implementación mejorada del inicio de sesión con manejo de errores
 document.addEventListener("DOMContentLoaded", () => {
@@ -1316,10 +1263,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.json()
         })
         .then((data) => {
-          // CORRECCIÓN: Guardar el objeto de usuario completo, no solo el email
+          // Guardar el objeto de usuario completo, no solo el email
           localStorage.setItem("userLoggedIn", "true")
           localStorage.setItem("usuarioLogueado", email)
-          
+
           // Guardar el objeto de usuario completo si está disponible
           if (data.user) {
             localStorage.setItem("currentUserData", JSON.stringify(data.user))
