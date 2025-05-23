@@ -1003,7 +1003,7 @@
         </div>
     </div>
 
-    <!-- Modal de Iniciar Sesión -->
+    <!-- Modal de Iniciar Sesión - CORREGIDO -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -1015,19 +1015,20 @@
                     <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
                         Credenciales incorrectas
                     </div>
-                    <form id="loginForm">
+                    <!-- FORMULARIO CORREGIDO - Sin action ni method -->
+                    <form id="loginForm" novalidate>
                         <div class="mb-3">
                             <label for="loginEmail" class="form-label">Email</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" id="loginEmail" placeholder="Ingrese su email" required>
+                                <input type="email" name="email" class="form-control" id="loginEmail" placeholder="Ingrese su email" required autocomplete="email">
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Contraseña</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" name="password" class="form-control" id="loginPassword" placeholder="Ingrese su contraseña" required>
+                                <input type="password" name="password" class="form-control" id="loginPassword" placeholder="Ingrese su contraseña" required autocomplete="current-password">
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
