@@ -47,10 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMyReservations()
 
   // Modificar el enlace "Mis reservas" en el menú desplegable
-  const misReservasLink = document.querySelector('.dropdown-item[href="#"][contains(text(), "Mis reservas")]')
+  const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
-    misReservasLink.setAttribute("data-bs-target", "#myReservationsModal")
-    misReservasLink.setAttribute("data-bs-toggle", "modal")
+    misReservasLink.addEventListener("click", (e) => {
+      e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
+        const myReservationsModal = new bootstrap.Modal(document.getElementById("myReservationsModal"))
+        myReservationsModal.show()
+
+        // Cargar reservas del usuario
+        loadUserReservations()
+      } else {
+        console.warn("Bootstrap is not defined. Make sure it is properly imported.")
+      }
+    })
   }
 })
 
@@ -58,7 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
  * Inicializa la biblioteca AOS para animaciones al hacer scroll
  */
 function initAOS() {
-  if (typeof AOS !== "undefined") {
+  const AOS = window.AOS // Declare the AOS variable
+  if (AOS) {
     AOS.init({
       duration: 1000,
       once: true,
@@ -80,7 +92,8 @@ function initMap() {
   const mapElement = document.getElementById("map")
   if (mapElement) {
     try {
-      if (typeof L !== "undefined") {
+      const L = window.L // Declare the L variable
+      if (L) {
         const map = L.map("map").setView([hotelLatitude, hotelLongitude], 15)
 
         // Agregar capa de OpenStreetMap
@@ -209,7 +222,8 @@ function setupModals() {
   if (createUserLink) {
     createUserLink.addEventListener("click", (e) => {
       e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
         const createUserModal = new bootstrap.Modal(document.getElementById("createUserModal"))
         createUserModal.show()
       } else {
@@ -223,7 +237,8 @@ function setupModals() {
   if (loginLink) {
     loginLink.addEventListener("click", (e) => {
       e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
         const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
         loginModal.show()
       } else {
@@ -237,7 +252,8 @@ function setupModals() {
   if (switchToCreateUser) {
     switchToCreateUser.addEventListener("click", (e) => {
       e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
         const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
         if (loginModal) {
           loginModal.hide()
@@ -257,7 +273,8 @@ function setupModals() {
   if (switchToLogin) {
     switchToLogin.addEventListener("click", (e) => {
       e.preventDefault()
-      if (typeof bootstrap !== "undefined") {
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
         const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
         if (createUserModal) {
           createUserModal.hide()
@@ -319,7 +336,7 @@ function setupFormValidation() {
 
 // Configurar el formulario de reservas
 function setupReservationForm() {
-  const reservationForm = document.querySelector(".reservation-form")
+  const reservationForm = document.getElementById("reservationForm")
 
   if (reservationForm) {
     reservationForm.addEventListener("submit", (e) => {
@@ -329,12 +346,8 @@ function setupReservationForm() {
       const isLoggedIn = localStorage.getItem("userLoggedIn") === "true"
 
       if (!isLoggedIn) {
-        // Mostrar modal de login si no está logueado
-        alert("Debe iniciar sesión para realizar una reserva")
-        if (typeof bootstrap !== "undefined") {
-          const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
-          loginModal.show()
-        }
+        // Mostrar alerta de login requerido
+        document.getElementById("loginRequiredAlert").classList.remove("d-none")
         return
       }
 
@@ -347,21 +360,119 @@ function setupReservationForm() {
       const email = document.getElementById("email").value
       const specialRequests = document.getElementById("specialRequests").value
 
+      // Validar fechas
+      if (new Date(checkIn) >= new Date(checkOut)) {
+        alert("La fecha de salida debe ser posterior a la fecha de entrada")
+        return
+      }
+
+      // Obtener el ID del usuario desde localStorage
+      let userId = null
+      const userDataStr = localStorage.getItem("currentUserData")
+
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr)
+          if (userData.id) {
+            userId = userData.id
+          }
+        } catch (e) {
+          console.error("Error al parsear datos de usuario:", e)
+        }
+      }
+
+      // Si no hay ID, usar el correo como identificador
+      if (!userId) {
+        const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+        if (!userEmail) {
+          alert("Error: No se pudo identificar al usuario")
+          return
+        }
+      }
+
+      // Mostrar indicador de carga
+      const submitBtn = document.querySelector('#reservationForm button[type="submit"]')
+      const originalBtnText = submitBtn.innerHTML
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+      submitBtn.disabled = true
+
       // Crear objeto con datos de la reserva
       const reservationData = {
+        usuario_id: userId,
+        habitacion_id: getRoomIdByType(roomType),
         fecha_inicio: checkIn,
         fecha_fin: checkOut,
-        habitacion_tipo: roomType,
-        huespedes: guests,
+        estado: "pendiente",
+        // Datos adicionales para el backend
         nombre: name,
         correo: email,
+        huespedes: guests,
         solicitudes_especiales: specialRequests,
-        estado: "pendiente",
-        // No usamos el correo como ID, lo obtendremos del objeto userData en createReservation
       }
 
       // Enviar datos al servidor
-      createReservation(reservationData)
+      fetch("https://hotelitus.onrender.com/reservar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reservationData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Error al crear la reserva")
+          }
+          return response.json()
+        })
+        .then((result) => {
+          // Restaurar botón
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+
+          // Mostrar mensaje de éxito
+          alert("¡Reserva creada con éxito!")
+
+          // Limpiar formulario
+          document.getElementById("reservationForm").reset()
+
+          // Pre-llenar con datos del usuario nuevamente
+          if (userDataStr) {
+            try {
+              const userData = JSON.parse(userDataStr)
+              if (document.getElementById("name")) {
+                document.getElementById("name").value = userData.nombre || ""
+              }
+              if (document.getElementById("email")) {
+                document.getElementById("email").value = userData.correo || ""
+              }
+            } catch (e) {
+              console.error("Error al parsear datos de usuario:", e)
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error al crear reserva:", error)
+
+          // Restaurar botón
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+
+          // Mostrar mensaje de error
+          alert("Error al crear la reserva. Por favor, inténtelo de nuevo.")
+        })
+    })
+  }
+
+  // Evento para el enlace de login desde la alerta de reserva
+  const loginFromReservation = document.getElementById("loginFromReservation")
+  if (loginFromReservation) {
+    loginFromReservation.addEventListener("click", (e) => {
+      e.preventDefault()
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
+        const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
+        loginModal.show()
+      }
     })
   }
 
@@ -385,222 +496,144 @@ function setupReservationForm() {
   }
 }
 
-// Función para crear una reserva
-function createReservation(data) {
-  // Mostrar indicador de carga
-  const submitBtn = document.querySelector('.reservation-form button[type="submit"]')
-  const originalBtnText = submitBtn.innerHTML
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
-  submitBtn.disabled = true
-
-  // CORRECCIÓN: Obtener el ID del usuario desde localStorage si está disponible
-  const userDataStr = localStorage.getItem("currentUserData")
-  if (userDataStr) {
-    try {
-      const userData = JSON.parse(userDataStr)
-      // Asegurarse de que estamos enviando el ID del usuario, no su correo
-      if (userData.id) {
-        data.usuario_id = userData.id
-      } else if (userData.usuario_id) {
-        data.usuario_id = userData.usuario_id
-      } else {
-        // Si no hay ID, usar el correo como fallback
-        data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
-        console.warn("No se encontró ID de usuario, usando correo como fallback")
-      }
-    } catch (e) {
-      console.error("Error al parsear datos de usuario:", e)
-      // Fallback al método anterior
-      data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
-    }
-  } else {
-    // Fallback al método anterior
-    data.usuario_id = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+// Función para obtener el ID de habitación según el tipo
+function getRoomIdByType(type) {
+  // Mapeo de tipos de habitación a IDs
+  // Estos IDs deben coincidir con los de la base de datos
+  const roomTypes = {
+    individual: 1,
+    doble: 2,
+    suite: 3,
   }
 
-  fetch(`${backendBaseUrl}/reservar`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Error al crear la reserva")
-      }
-      return response.json()
-    })
-    .then((result) => {
-      // Restaurar botón
-      submitBtn.innerHTML = originalBtnText
-      submitBtn.disabled = false
-
-      // Mostrar mensaje de éxito
-      alert("¡Reserva creada con éxito!")
-
-      // Limpiar formulario
-      document.querySelector(".reservation-form").reset()
-
-      // Pre-llenar con datos del usuario nuevamente
-      const userDataStr = localStorage.getItem("currentUserData")
-      if (userDataStr) {
-        try {
-          const userData = JSON.parse(userDataStr)
-          if (document.getElementById("name")) {
-            document.getElementById("name").value = userData.nombre || ""
-          }
-          if (document.getElementById("email")) {
-            document.getElementById("email").value = userData.correo || ""
-          }
-        } catch (e) {
-          console.error("Error al parsear datos de usuario:", e)
-        }
-      }
-    })
-    .catch((error) => {
-      console.error("Error al crear reserva:", error)
-
-      // Restaurar botón
-      submitBtn.innerHTML = originalBtnText
-      submitBtn.disabled = false
-
-      // Mostrar mensaje de error
-      alert("Error al crear la reserva. Por favor, inténtelo de nuevo.")
-    })
+  return roomTypes[type] || 1 // Devolver 1 (individual) por defecto
 }
 
-// Función para obtener las reservas del usuario actual
-function getUserReservations() {
-  // CORRECCIÓN: Intentar obtener el ID del usuario primero
+// Función para cargar las reservas del usuario
+function setupMyReservations() {
+  // Configurar el modal de mis reservas
+  const myReservationsModal = document.getElementById("myReservationsModal")
+
+  if (myReservationsModal) {
+    myReservationsModal.addEventListener("show.bs.modal", () => {
+      loadUserReservations()
+    })
+  }
+}
+
+// Cargar las reservas del usuario
+function loadUserReservations() {
+  const reservationsLoading = document.getElementById("reservationsLoading")
+  const noReservationsMessage = document.getElementById("noReservationsMessage")
+  const reservationsList = document.getElementById("reservationsList")
+  const reservationsTableBody = document.getElementById("reservationsTableBody")
+
+  if (!reservationsLoading || !noReservationsMessage || !reservationsList || !reservationsTableBody) {
+    console.error("Elementos del modal de reservas no encontrados")
+    return
+  }
+
+  // Mostrar cargando, ocultar otros elementos
+  reservationsLoading.classList.remove("d-none")
+  noReservationsMessage.classList.add("d-none")
+  reservationsList.classList.add("d-none")
+
+  // Obtener ID o correo del usuario
   let userId = null
+  let userEmail = null
+
   const userDataStr = localStorage.getItem("currentUserData")
-  
   if (userDataStr) {
     try {
       const userData = JSON.parse(userDataStr)
       if (userData.id) {
         userId = userData.id
-      } else if (userData.usuario_id) {
-        userId = userData.usuario_id
+      }
+      if (userData.correo) {
+        userEmail = userData.correo
       }
     } catch (e) {
-      console.error("Error al parsear datos de usuario:", e)
+      console.error("Error al parsear datos de usuario en caché:", e)
     }
   }
-  
-  // Si no hay ID, usar el correo como fallback
-  const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
 
   if (!userId && !userEmail) {
-    return Promise.reject("No hay usuario logueado")
+    userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
   }
 
-  // Enviar el ID si está disponible, de lo contrario enviar el correo
-  const payload = userId ? { id: userId } : { correo: userEmail }
+  if (!userId && !userEmail) {
+    // No hay identificación de usuario
+    reservationsLoading.classList.add("d-none")
+    noReservationsMessage.classList.remove("d-none")
+    return
+  }
 
-  return fetch(`${backendBaseUrl}/user-reservations`, {
+  // Crear payload para la petición
+  const payload = {}
+  if (userId) {
+    payload.usuario_id = userId
+  } else {
+    payload.correo = userEmail
+  }
+
+  // Obtener reservas del usuario
+  fetch("https://hotelitus.onrender.com/user-reservations", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error("Error al obtener reservas")
-    }
-    return response.json()
   })
-}
-
-// Configurar la sección "Mis reservas"
-function setupMyReservations() {
-  // Agregar evento al enlace "Mis reservas" en el menú desplegable
-  const myReservationsLink = document.querySelector('.dropdown-item[href="#"][data-bs-target="#myReservationsModal"]')
-
-  if (myReservationsLink) {
-    myReservationsLink.addEventListener("click", (e) => {
-      e.preventDefault()
-
-      // Mostrar modal de reservas
-      if (typeof bootstrap !== "undefined") {
-        const myReservationsModal = new bootstrap.Modal(document.getElementById("myReservationsModal"))
-        myReservationsModal.show()
-
-        // Cargar reservas del usuario
-        loadUserReservations()
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Error al obtener reservas")
       }
+      return response.json()
     })
-  }
-}
-
-// Cargar las reservas del usuario en el modal
-function loadUserReservations() {
-  const reservationsContainer = document.getElementById("userReservationsList")
-
-  if (!reservationsContainer) return
-
-  // Mostrar indicador de carga
-  reservationsContainer.innerHTML = `
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-      <p class="mt-2">Cargando sus reservas...</p>
-    </div>
-  `
-
-  // Obtener reservas del usuario
-  getUserReservations()
     .then((data) => {
-      if (data.success && data.reservations.length > 0) {
-        // Mostrar reservas
-        let html = ""
+      // Ocultar cargando
+      reservationsLoading.classList.add("d-none")
 
-        data.reservations.forEach((reserva) => {
+      if (data.reservas && data.reservas.length > 0) {
+        // Mostrar lista de reservas
+        reservationsList.classList.remove("d-none")
+
+        // Limpiar tabla
+        reservationsTableBody.innerHTML = ""
+
+        // Llenar tabla con reservas
+        data.reservas.forEach((reserva) => {
+          const row = document.createElement("tr")
+
+          // Formatear fechas
+          const fechaInicio = new Date(reserva.fecha_inicio).toLocaleDateString()
+          const fechaFin = new Date(reserva.fecha_fin).toLocaleDateString()
+
           // Determinar clase de estado
-          let statusClass = "bg-warning"
-          if (reserva.estado === "confirmada") statusClass = "bg-success"
-          if (reserva.estado === "cancelada") statusClass = "bg-danger"
+          let estadoClass = ""
+          if (reserva.estado === "confirmada") estadoClass = "bg-success"
+          else if (reserva.estado === "pendiente") estadoClass = "bg-warning"
+          else if (reserva.estado === "cancelada") estadoClass = "bg-danger"
 
-          html += `
-            <div class="reservation-card mb-3">
-              <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0">Reserva #${reserva.id}</h5>
-                  <span class="badge ${statusClass}">${reserva.estado.toUpperCase()}</span>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <p><strong><i class="fas fa-calendar-alt me-2"></i>Check-in:</strong> ${formatDate(reserva.fecha_inicio)}</p>
-                      <p><strong><i class="fas fa-calendar-alt me-2"></i>Check-out:</strong> ${formatDate(reserva.fecha_fin)}</p>
-                      <p><strong><i class="fas fa-bed me-2"></i>Habitación:</strong> ${getTipoHabitacion(reserva.habitacion_tipo)}</p>
-                    </div>
-                    <div class="col-md-6">
-                      <p><strong><i class="fas fa-user-friends me-2"></i>Huéspedes:</strong> ${reserva.huespedes || "No especificado"}</p>
-                      <p><strong><i class="fas fa-comment-alt me-2"></i>Solicitudes:</strong> ${reserva.solicitudes_especiales || "Ninguna"}</p>
-                      <p><strong><i class="fas fa-clock me-2"></i>Fecha de reserva:</strong> ${formatDate(reserva.fecha_creacion)}</p>
-                    </div>
-                  </div>
-                  ${
-                    reserva.estado !== "cancelada"
-                      ? `
-                  <div class="text-end mt-3">
-                    <button class="btn btn-outline-danger btn-sm cancel-reservation" data-id="${reserva.id}">
-                      <i class="fas fa-times-circle me-1"></i>Cancelar reserva
-                    </button>
-                  </div>
-                  `
-                      : ""
-                  }
-                </div>
-              </div>
-            </div>
+          row.innerHTML = `
+            <td>${fechaInicio}</td>
+            <td>${fechaFin}</td>
+            <td>${getTipoHabitacion(reserva.habitacion_id)}</td>
+            <td>${reserva.huespedes || "-"}</td>
+            <td><span class="badge ${estadoClass}">${reserva.estado.toUpperCase()}</span></td>
+            <td>
+              ${
+                reserva.estado !== "cancelada"
+                  ? `<button class="btn btn-sm btn-outline-danger cancel-reservation" data-id="${reserva.id}">
+                  <i class="fas fa-times-circle"></i> Cancelar
+                </button>`
+                  : "-"
+              }
+            </td>
           `
-        })
 
-        reservationsContainer.innerHTML = html
+          reservationsTableBody.appendChild(row)
+        })
 
         // Agregar eventos a los botones de cancelar
         document.querySelectorAll(".cancel-reservation").forEach((btn) => {
@@ -612,43 +645,27 @@ function loadUserReservations() {
           })
         })
       } else {
-        // No hay reservas
-        reservationsContainer.innerHTML = `
-          <div class="text-center py-5">
-            <div class="service-icon mb-3">
-              <i class="fas fa-calendar-times"></i>
-            </div>
-            <h4>No tiene reservas activas</h4>
-            <p>Realice una reserva para disfrutar de nuestras instalaciones.</p>
-            <a href="#reservas" class="btn btn-primary" data-bs-dismiss="modal">
-              <i class="fas fa-calendar-plus me-2"></i>Hacer una reserva
-            </a>
-          </div>
-        `
+        // Mostrar mensaje de no reservas
+        noReservationsMessage.classList.remove("d-none")
       }
     })
     .catch((error) => {
       console.error("Error al cargar reservas:", error)
 
-      // Mostrar mensaje de error
-      reservationsContainer.innerHTML = `
-        <div class="text-center py-5">
-          <div class="service-icon mb-3 bg-danger">
-            <i class="fas fa-exclamation-triangle text-white"></i>
-          </div>
-          <h4>Error al cargar reservas</h4>
-          <p>Ha ocurrido un error al cargar sus reservas. Por favor, inténtelo de nuevo más tarde.</p>
-          <button class="btn btn-primary" onclick="loadUserReservations()">
-            <i class="fas fa-sync-alt me-2"></i>Reintentar
-          </button>
-        </div>
-      `
+      // Ocultar cargando
+      reservationsLoading.classList.add("d-none")
+
+      // Mostrar mensaje de no reservas (como fallback)
+      noReservationsMessage.classList.remove("d-none")
+      noReservationsMessage.querySelector("h5").textContent = "Error al cargar reservas"
+      noReservationsMessage.querySelector("p").textContent =
+        "Ha ocurrido un error. Por favor, inténtelo de nuevo más tarde."
     })
 }
 
 // Función para cancelar una reserva
 function cancelReservation(reservaId) {
-  fetch(`${backendBaseUrl}/cancel-reservation`, {
+  fetch("https://hotelitus.onrender.com/cancel-reservation", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -667,7 +684,7 @@ function cancelReservation(reservaId) {
         // Recargar reservas
         loadUserReservations()
       } else {
-        alert("Error al cancelar la reserva: " + result.message)
+        alert("Error al cancelar la reserva: " + (result.message || "Error desconocido"))
       }
     })
     .catch((error) => {
@@ -676,27 +693,16 @@ function cancelReservation(reservaId) {
     })
 }
 
-// Función auxiliar para formatear fechas
-function formatDate(dateString) {
-  if (!dateString) return "No especificada"
-
-  const date = new Date(dateString)
-  return date.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-}
-
-// Función auxiliar para obtener el nombre del tipo de habitación
-function getTipoHabitacion(tipo) {
-  const tipos = {
-    individual: "Habitación Individual",
-    doble: "Habitación Doble",
-    suite: "Suite Ejecutiva",
+// Función auxiliar para obtener el nombre del tipo de habitación según ID
+function getTipoHabitacion(id) {
+  // Mapeo de IDs a nombres de tipos de habitación
+  const tiposHabitacion = {
+    1: "Habitación Individual",
+    2: "Habitación Doble",
+    3: "Suite Ejecutiva",
   }
 
-  return tipos[tipo] || tipo
+  return tiposHabitacion[id] || `Habitación ${id}`
 }
 
 /**
@@ -739,7 +745,8 @@ function initTooltips() {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
   if (tooltipTriggerList.length > 0) {
     try {
-      if (typeof bootstrap !== "undefined") {
+      const bootstrap = window.bootstrap // Declare the bootstrap variable
+      if (bootstrap) {
         const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
       } else {
         console.warn("Bootstrap is not defined. Make sure it is properly imported.")
@@ -808,7 +815,8 @@ function handleResponsiveNav() {
       link.addEventListener("click", () => {
         if (window.innerWidth < 992) {
           try {
-            if (typeof bootstrap !== "undefined") {
+            const bootstrap = window.bootstrap // Declare the bootstrap variable
+            if (bootstrap) {
               const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse)
               if (bsCollapse) {
                 bsCollapse.hide()
@@ -969,7 +977,7 @@ function loadUserData() {
   }
 
   // Si no hay datos en caché o hay error, cargar desde el backend
-  fetch(`${backendBaseUrl}/get-user-data`, {
+  fetch("https://hotelitus.onrender.com/get-user-data", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1133,7 +1141,8 @@ function sendVerificationCode(userData) {
     .then((result) => {
       if (result.success) {
         // Show verification modal
-        if (typeof bootstrap !== "undefined") {
+        const bootstrap = window.bootstrap // Declare the bootstrap variable
+        if (bootstrap) {
           // Hide create user modal if it's open
           const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
           if (createUserModal) {
@@ -1180,7 +1189,8 @@ function verifyCode(email, code) {
     .then((result) => {
       if (result.success) {
         // Hide verification modal
-        if (typeof bootstrap !== "undefined") {
+        const bootstrap = window.bootstrap // Declare the bootstrap variable
+        if (bootstrap) {
           const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
           if (verificationModal) {
             verificationModal.hide()
@@ -1196,7 +1206,8 @@ function verifyCode(email, code) {
 
         // Show login modal
         setTimeout(() => {
-          if (typeof bootstrap !== "undefined") {
+          const bootstrap = window.bootstrap // Declare the bootstrap variable
+          if (bootstrap) {
             const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
             loginModal.show()
           }
@@ -1209,71 +1220,6 @@ function verifyCode(email, code) {
     .catch((error) => {
       console.error("Error al verificar código:", error)
       document.getElementById("verification-error").style.display = "block"
-    })
-}
-
-// URL base del backend en Render
-const backendBaseUrl = "https://hotelitus.onrender.com"
-
-// Función para crear una nueva reserva (POST)
-function createReserva(data) {
-  fetch(`${backendBaseUrl}/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("✅ Reserva creada:", result)
-      alert("Reserva creada con éxito.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al crear la reserva:", error)
-      alert("Error al crear la reserva.")
-    })
-}
-
-// Función para obtener todas las reservas (GET)
-function getReservas() {
-  fetch(`${backendBaseUrl}/select`)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("📋 Reservas obtenidas:", data)
-      // TODO: mostrar los datos en una tabla o lista en el DOM
-    })
-    .catch((error) => {
-      console.error("❌ Error al obtener reservas:", error)
-      alert("Error al obtener reservas.")
-    })
-}
-
-// Función para actualizar una reserva (GET con query params)
-function updateReserva(id, nuevoNombre) {
-  fetch(`${backendBaseUrl}/update?id=${id}&nombre=${nuevoNombre}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🔄 Reserva actualizada:", result)
-      alert("Reserva actualizada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al actualizar reserva:", error)
-      alert("Error al actualizar la reserva.")
-    })
-}
-
-// Función para eliminar una reserva (GET con query param)
-function deleteReserva(id) {
-  fetch(`${backendBaseUrl}/delete?id=${id}`)
-    .then((response) => response.json())
-    .then((result) => {
-      console.log("🗑️ Reserva eliminada:", result)
-      alert("Reserva eliminada correctamente.")
-    })
-    .catch((error) => {
-      console.error("❌ Error al eliminar reserva:", error)
-      alert("Error al eliminar la reserva.")
     })
 }
 
@@ -1302,7 +1248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("loginPassword").value
 
       // Usar fetch para enviar los datos al backend
-      fetch(`${backendBaseUrl}/sesion`, {
+      fetch("https://hotelitus.onrender.com/sesion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1316,10 +1262,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.json()
         })
         .then((data) => {
-          // CORRECCIÓN: Guardar el objeto de usuario completo, no solo el email
+          // Guardar el objeto de usuario completo, no solo el email
           localStorage.setItem("userLoggedIn", "true")
           localStorage.setItem("usuarioLogueado", email)
-          
+
           // Guardar el objeto de usuario completo si está disponible
           if (data.user) {
             localStorage.setItem("currentUserData", JSON.stringify(data.user))
