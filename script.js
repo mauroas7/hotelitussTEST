@@ -817,6 +817,7 @@ function loadUserData() {
     })
 }
 
+// Añadir esta función para generar las iniciales del usuario
 function updateUserProfileUI(userData) {
   const userDisplayName = document.getElementById("userDisplayName")
   if (userDisplayName) {
@@ -831,6 +832,20 @@ function updateUserProfileUI(userData) {
   const userEmail = document.getElementById("userEmail")
   if (userEmail) {
     userEmail.textContent = userData.correo || ""
+  }
+
+  // Generar iniciales para el avatar
+  const userInitials = document.getElementById("userInitials")
+  if (userInitials && userData.nombre) {
+    // Obtener las iniciales del nombre (primera letra de cada palabra)
+    const initials = userData.nombre
+      .split(" ")
+      .map((name) => name.charAt(0))
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) // Limitar a 2 caracteres
+
+    userInitials.textContent = initials || "U"
   }
 }
 
