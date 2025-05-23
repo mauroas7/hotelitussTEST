@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupVerificationCode()
   setupReservationForm()
   setupMyReservations()
-  setupLoginForm() // Añadimos esta función
+  setupDateConstraints()
+  setupLoginForm()
 
   const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
@@ -30,87 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
-
-// NUEVA FUNCIÓN PARA MANEJAR EL LOGIN
-function setupLoginForm() {
-  const loginForm = document.getElementById("loginForm")
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault() // Prevenir el envío tradicional del formulario
-      e.stopPropagation()
-
-      console.log("Formulario de login interceptado correctamente")
-
-      const submitBtn = this.querySelector('button[type="submit"]')
-      const originalBtnText = submitBtn.innerHTML
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
-      submitBtn.disabled = true
-
-      const errorMsg = document.getElementById("loginErrorMsg")
-      if (errorMsg) {
-        errorMsg.classList.add("d-none")
-      }
-
-      const email = document.getElementById("loginEmail").value
-      const password = document.getElementById("loginPassword").value
-
-      console.log("Datos de login:", { email: email, password: "***" })
-
-      fetch("https://hotelitus.onrender.com/sesion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-        .then((response) => {
-          console.log("Respuesta del servidor:", response.status)
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`)
-          }
-          return response.json()
-        })
-        .then((data) => {
-          console.log("Login exitoso:", data)
-          
-          // Guardar datos de sesión
-          localStorage.setItem("userLoggedIn", "true")
-          localStorage.setItem("usuarioLogueado", email)
-          localStorage.setItem("currentUserEmail", email)
-
-          if (data.user) {
-            localStorage.setItem("currentUserData", JSON.stringify(data.user))
-          }
-
-          // Cerrar modal
-          const bootstrap = window.bootstrap
-          if (bootstrap) {
-            const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
-            if (loginModal) {
-              loginModal.hide()
-            }
-          }
-
-          // Recargar la página para actualizar la interfaz
-          setTimeout(() => {
-            window.location.reload()
-          }, 500)
-        })
-        .catch((error) => {
-          console.error("Error en inicio de sesión:", error)
-
-          if (errorMsg) {
-            errorMsg.classList.remove("d-none")
-            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
-          }
-
-          submitBtn.innerHTML = originalBtnText
-          submitBtn.disabled = false
-        })
-    })
-  }
-}
 
 function initAOS() {
   const AOS = window.AOS
@@ -330,6 +250,91 @@ function setupFormValidation() {
   }
 }
 
+function setupLoginForm() {
+  const loginForm = document.getElementById("loginForm")
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault()
+
+      const email = document.getElementById("loginEmail").value
+      const password = document.getElementById("loginPassword").value
+      const errorMsg = document.getElementById("loginErrorMsg")
+
+      if (!email || !password) {
+        errorMsg.textContent = "Por favor, complete todos los campos"
+        errorMsg.classList.remove("d-none")
+        return
+      }
+
+      const submitBtn = this.querySelector('button[type="submit"]')
+      const originalBtnText = submitBtn.innerHTML
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+      submitBtn.disabled = true
+
+      fetch("https://hotelitus.onrender.com/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          correo: email,
+          password: password,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+
+          if (data.success) {
+            // Guardar información de sesión
+            localStorage.setItem("userLoggedIn", "true")
+            localStorage.setItem("usuarioLogueado", email)
+            localStorage.setItem("currentUserEmail", email)
+
+            // Cerrar modal
+            const bootstrap = window.bootstrap
+            if (bootstrap) {
+              const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
+              if (loginModal) {
+                loginModal.hide()
+              }
+            }
+
+            // Recargar la página para actualizar el estado de sesión
+            window.location.reload()
+          } else {
+            errorMsg.textContent = data.message || "Credenciales incorrectas"
+            errorMsg.classList.remove("d-none")
+          }
+        })
+        .catch((error) => {
+          console.error("Error al iniciar sesión:", error)
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+          errorMsg.textContent = "Error al conectar con el servidor. Intente nuevamente."
+          errorMsg.classList.remove("d-none")
+        })
+    })
+  }
+}
+
+function showReservationMessage(message, type = "danger") {
+  const messagesDiv = document.getElementById("reservationMessages")
+  if (messagesDiv) {
+    messagesDiv.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `
+
+    // Hacer scroll al mensaje
+    messagesDiv.scrollIntoView({ behavior: "smooth", block: "center" })
+  }
+}
+
 function setupReservationForm() {
   const reservationForm = document.getElementById("reservationForm")
 
@@ -352,8 +357,23 @@ function setupReservationForm() {
       const email = document.getElementById("email").value
       const specialRequests = document.getElementById("specialRequests").value
 
-      if (new Date(checkIn) >= new Date(checkOut)) {
-        alert("La fecha de salida debe ser posterior a la fecha de entrada")
+      const checkInDate = new Date(checkIn)
+      const checkOutDate = new Date(checkOut)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      if (checkInDate < today) {
+        showReservationMessage("La fecha de entrada no puede ser anterior a hoy")
+        return
+      }
+
+      if (checkInDate >= checkOutDate) {
+        showReservationMessage("La fecha de salida debe ser posterior a la fecha de entrada")
+        return
+      }
+
+      if ((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24) > 30) {
+        showReservationMessage("La reserva no puede ser por más de 30 días")
         return
       }
 
@@ -381,14 +401,12 @@ function setupReservationForm() {
       }
 
       if (!userId && !userEmail) {
-        alert("Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.")
+        showReservationMessage("Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.")
         return
       }
 
       const submitBtn = document.querySelector('#reservationForm button[type="submit"]')
       const originalBtnText = submitBtn.innerHTML
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
-      submitBtn.disabled = true
 
       const reservationData = {
         usuario_id: userId,
@@ -402,30 +420,43 @@ function setupReservationForm() {
         solicitudes_especiales: specialRequests,
       }
 
-      console.log("Enviando datos de reserva:", reservationData)
+      console.log("Datos completos de la reserva a enviar:", JSON.stringify(reservationData, null, 2))
 
-      fetch("https://hotelitus.onrender.com/reservar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
-      })
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+      submitBtn.disabled = true
+
+      // Primero verificamos disponibilidad
+      checkRoomAvailability(roomType, checkIn, checkOut)
+        .then((isAvailable) => {
+          if (!isAvailable) {
+            throw new Error("La habitación seleccionada no está disponible para las fechas indicadas")
+          }
+
+          // Si está disponible, procedemos con la reserva
+          return fetch("https://hotelitus.onrender.com/reservar", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(reservationData),
+          })
+        })
         .then((response) => {
           console.log("Respuesta del servidor:", response.status)
-          if (!response.ok) {
-            return response.json().then((err) => {
-              throw new Error(err.message || "Error al crear la reserva")
-            })
-          }
-          return response.json()
+          return response.json().then((data) => {
+            if (!response.ok) {
+              // Añadir más información al error
+              throw new Error(data.message || `Error al crear la reserva (${response.status})`)
+            }
+            return data
+          })
         })
         .then((result) => {
           console.log("Resultado exitoso:", result)
           submitBtn.innerHTML = originalBtnText
           submitBtn.disabled = false
 
-          alert("¡Reserva creada con éxito!")
+          showReservationMessage("¡Reserva creada con éxito! Gracias por elegir Hotelituss.", "success")
 
           document.getElementById("reservationForm").reset()
 
@@ -449,7 +480,16 @@ function setupReservationForm() {
           submitBtn.innerHTML = originalBtnText
           submitBtn.disabled = false
 
-          alert("Error al crear la reserva: " + error.message)
+          // Mensajes de error más específicos
+          if (error.message.includes("no está disponible")) {
+            showReservationMessage(
+              "La habitación seleccionada no está disponible para las fechas indicadas. Por favor, seleccione otras fechas o tipo de habitación.",
+            )
+          } else if (error.message.includes("usuario")) {
+            showReservationMessage("Error con la identificación del usuario. Por favor, inicie sesión nuevamente.")
+          } else {
+            showReservationMessage("Error al crear la reserva: " + error.message)
+          }
         })
     })
   }
@@ -485,6 +525,34 @@ function setupReservationForm() {
   }
 }
 
+// Función para verificar disponibilidad de habitación
+function checkRoomAvailability(roomType, checkIn, checkOut) {
+  const roomId = getRoomIdByType(roomType)
+
+  return fetch("https://hotelitus.onrender.com/check-availability", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      habitacion_id: roomId,
+      fecha_inicio: checkIn,
+      fecha_fin: checkOut,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Respuesta de disponibilidad:", data)
+      return data.available === true
+    })
+    .catch((error) => {
+      console.error("Error al verificar disponibilidad:", error)
+      // En caso de error en la verificación, asumimos que está disponible
+      // y dejamos que el servidor decida en la reserva real
+      return true
+    })
+}
+
 function getRoomIdByType(type) {
   const roomTypes = {
     individual: 1,
@@ -492,7 +560,17 @@ function getRoomIdByType(type) {
     suite: 3,
   }
 
-  return roomTypes[type] || 1
+  // Asegurarse de que el tipo existe y convertirlo a minúsculas
+  const roomType = type ? type.toLowerCase() : ""
+
+  // Verificar si el tipo existe en nuestro objeto
+  if (roomTypes.hasOwnProperty(roomType)) {
+    console.log(`Tipo de habitación seleccionada: ${roomType}, ID: ${roomTypes[roomType]}`)
+    return roomTypes[roomType]
+  } else {
+    console.warn(`Tipo de habitación desconocido: ${roomType}, usando ID por defecto: 1`)
+    return 1 // Valor por defecto
+  }
 }
 
 function setupMyReservations() {
@@ -1097,3 +1175,66 @@ function verifyCode(email, code) {
       document.getElementById("verification-error").style.display = "block"
     })
 }
+
+function setupDateConstraints() {
+  const checkInInput = document.getElementById("checkIn")
+  const checkOutInput = document.getElementById("checkOut")
+
+  if (checkInInput && checkOutInput) {
+    // Establecer fecha mínima como hoy
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    // Formatear fechas para el atributo min (YYYY-MM-DD)
+    const formatDate = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, "0")
+      const day = String(date.getDate()).padStart(2, "0")
+      return `${year}-${month}-${day}`
+    }
+
+    const todayFormatted = formatDate(today)
+    const tomorrowFormatted = formatDate(tomorrow)
+
+    checkInInput.min = todayFormatted
+    checkOutInput.min = tomorrowFormatted
+
+    // Actualizar fecha mínima de salida cuando cambia la entrada
+    checkInInput.addEventListener("change", function () {
+      if (this.value) {
+        const nextDay = new Date(this.value)
+        nextDay.setDate(nextDay.getDate() + 1)
+        checkOutInput.min = formatDate(nextDay)
+
+        // Si la fecha de salida es anterior a la nueva fecha mínima, actualizarla
+        if (checkOutInput.value && new Date(checkOutInput.value) <= new Date(this.value)) {
+          checkOutInput.value = formatDate(nextDay)
+        }
+      }
+    })
+  }
+}
+
+// Función para añadir mensajes de reserva en el HTML
+function addReservationMessagesDiv() {
+  const reservationForm = document.getElementById("reservationForm")
+  if (reservationForm && !document.getElementById("reservationMessages")) {
+    const messagesDiv = document.createElement("div")
+    messagesDiv.id = "reservationMessages"
+    messagesDiv.className = "mt-3"
+
+    // Insertar después del botón de reserva
+    const submitButton = reservationForm.querySelector('button[type="submit"]')
+    if (submitButton) {
+      submitButton.parentNode.insertBefore(messagesDiv, submitButton.nextSibling)
+    } else {
+      reservationForm.appendChild(messagesDiv)
+    }
+  }
+}
+
+// Ejecutar esta función al cargar la página
+document.addEventListener("DOMContentLoaded", () => {
+  addReservationMessagesDiv()
+})
