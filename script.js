@@ -272,13 +272,14 @@ function setupLoginForm() {
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
       submitBtn.disabled = true
 
-      fetch("https://hotelitus.onrender.com/login", {
+      // CORREGIDO: Cambiar de /login a /sesion para coincidir con el backend
+      fetch("https://hotelitus.onrender.com/sesion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          correo: email,
+          email: email,
           password: password,
         }),
       })
@@ -425,27 +426,18 @@ function setupReservationForm() {
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
       submitBtn.disabled = true
 
-      // Primero verificamos disponibilidad
-      checkRoomAvailability(roomType, checkIn, checkOut)
-        .then((isAvailable) => {
-          if (!isAvailable) {
-            throw new Error("La habitación seleccionada no está disponible para las fechas indicadas")
-          }
-
-          // Si está disponible, procedemos con la reserva
-          return fetch("https://hotelitus.onrender.com/reservar", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(reservationData),
-          })
-        })
+      // Enviar directamente la reserva (el backend ya maneja la verificación de disponibilidad)
+      fetch("https://hotelitus.onrender.com/reservar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reservationData),
+      })
         .then((response) => {
           console.log("Respuesta del servidor:", response.status)
           return response.json().then((data) => {
             if (!response.ok) {
-              // Añadir más información al error
               throw new Error(data.message || `Error al crear la reserva (${response.status})`)
             }
             return data
@@ -523,34 +515,6 @@ function setupReservationForm() {
       }
     }
   }
-}
-
-// Función para verificar disponibilidad de habitación
-function checkRoomAvailability(roomType, checkIn, checkOut) {
-  const roomId = getRoomIdByType(roomType)
-
-  return fetch("https://hotelitus.onrender.com/check-availability", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      habitacion_id: roomId,
-      fecha_inicio: checkIn,
-      fecha_fin: checkOut,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Respuesta de disponibilidad:", data)
-      return data.available === true
-    })
-    .catch((error) => {
-      console.error("Error al verificar disponibilidad:", error)
-      // En caso de error en la verificación, asumimos que está disponible
-      // y dejamos que el servidor decida en la reserva real
-      return true
-    })
 }
 
 function getRoomIdByType(type) {
