@@ -126,11 +126,11 @@ body.dark-mode .room-card {
 
 body.dark-mode .card-title,
 body.dark-mode .modal-title,
-body.dark-mode h1, 
-body.dark-mode h2, 
-body.dark-mode h3, 
-body.dark-mode h4, 
-body.dark-mode h5, 
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
 body.dark-mode h6,
 body.dark-mode .section-title,
 body.dark-mode .testimonial-author {
@@ -631,73 +631,6 @@ a:hover {
   color: white;
 }
 
-/* Galería Section */
-.gallery-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--border-radius-lg);
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow);
-}
-
-.gallery-img {
-  transition: var(--transition);
-  height: 250px;
-  object-fit: cover;
-  width: 100%;
-  border-radius: var(--border-radius-lg);
-}
-
-.gallery-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.gallery-item:hover .gallery-overlay {
-  opacity: 1;
-}
-
-.gallery-item:hover .gallery-img {
-  transform: scale(1.05);
-}
-
-.gallery-info {
-  text-align: center;
-  color: white;
-}
-
-.gallery-info h5 {
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.gallery-icon {
-  width: 40px;
-  height: 40px;
-  background-color: var(--primary-color);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  margin: 0 auto;
-  transition: var(--transition);
-}
-
-.gallery-icon:hover {
-  transform: scale(1.1);
-  background-color: var(--primary-color-hover);
-}
-
 /* Reservas Section */
 .reservation-form {
   background-color: white;
@@ -1058,7 +991,6 @@ footer h5::after {
 }
 
 /* Botones flotantes */
-/* Modificar los estilos de los botones flotantes para asegurar que sean visibles */
 #backToTop,
 #darkModeToggle {
   width: 50px;
@@ -1073,7 +1005,6 @@ footer h5::after {
   z-index: 999;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: var(--transition);
-  /* Eliminar opacity: 0 y visibility: hidden para que sean visibles por defecto */
 }
 
 #backToTop {
@@ -1086,43 +1017,11 @@ footer h5::after {
 #darkModeToggle {
   right: 30px;
   bottom: 90px;
-  /* Asegurar que el botón de modo oscuro sea siempre visible */
   opacity: 1;
   visibility: visible;
 }
 
 #backToTop.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-#backToTop:hover,
-#darkModeToggle:hover {
-  background-color: var(--primary-color-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
-}
-
-#backToTop i,
-#darkModeToggle i {
-  font-size: 1.25rem;
-}
-
-/* Ajustar posición en dispositivos móviles */
-@media (max-width: 991.98px) {
-  #backToTop {
-    right: 20px;
-    bottom: 20px;
-  }
-
-  #darkModeToggle {
-    right: 20px;
-    bottom: 80px;
-  }
-}
-
-#backToTop.show,
-#darkModeToggle.show {
   opacity: 1;
   visibility: visible;
 }
@@ -1255,42 +1154,26 @@ body.dark-mode .contact-method {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Estilos para verificación */
+.verification-input {
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.25rem;
+  transition: var(--transition);
+  border: 2px solid var(--border-color);
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.8s ease forwards;
-}
-
-.animate-pulse {
-  animation: pulse 2s infinite;
-}
-
-/* Mejoras de accesibilidad */
-.form-control:focus,
-.btn:focus {
+.verification-input:focus {
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 0.25rem rgba(200, 169, 126, 0.25);
+}
+
+body.dark-mode .verification-input {
+  background-color: var(--dark-color);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 /* Responsive */
@@ -1365,10 +1248,6 @@ body.dark-mode .contact-method {
     height: 200px;
   }
 
-  .gallery-img {
-    height: 200px;
-  }
-
   .experience-badge {
     width: 80px;
     height: 80px;
@@ -1408,196 +1287,4 @@ body.dark-mode .contact-method {
     display: block;
     margin: 0.5rem 0;
   }
-}
-
-/* Mejorar la visibilidad del botón de cerrar sesión */
-#logoutBtn {
-  margin-left: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-#logoutBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.verification-input {
-  width: 50px;
-  height: 50px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.25rem;
-  transition: var(--transition);
-  border: 2px solid var(--border-color);
-}
-
-.verification-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.25rem rgba(200, 169, 126, 0.25);
-}
-
-/* Estilos para modo oscuro */
-body.dark-mode .verification-input {
-  background-color: var(--dark-color);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-/* Animación de pulso para el reenvío de código */
-@keyframes fadeInOut {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
-
-#countdown.counting {
-  animation: fadeInOut 1.5s infinite;
-}
-
-/* Estilos para el menú desplegable del perfil */
-.user-profile-header {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #c8a97e;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  font-size: 18px;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-info h6 {
-  margin-bottom: 2px;
-  font-weight: 600;
-}
-
-.dropdown-menu {
-  min-width: 260px;
-  padding: 0;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  border: none;
-}
-
-.dropdown-header {
-  padding: 0;
-  border-bottom: 1px solid #f1f1f1;
-}
-
-.dropdown-item {
-  padding: 10px 20px;
-  font-size: 14px;
-}
-
-.dropdown-item:hover {
-  background-color: #f8f5f0;
-}
-
-.dropdown-item i {
-  color: #c8a97e;
-  width: 20px;
-  text-align: center;
-}
-
-.dropdown-divider {
-  margin: 0;
-}
-
-/* Estilo para el botón de perfil cuando está activo */
-.nav-link.dropdown-toggle.show {
-  color: #c8a97e !important;
-}
-
-/* Estilos para las tarjetas de reserva */
-.reservation-card {
-  transition: var(--transition);
-}
-
-.reservation-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow);
-}
-
-.reservation-card .card {
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-}
-
-.reservation-card .card-header {
-  background-color: rgba(200, 169, 126, 0.1);
-  border-bottom: 1px solid rgba(200, 169, 126, 0.2);
-}
-
-.reservation-card .badge {
-  padding: 0.5rem 0.75rem;
-  font-weight: 500;
-  border-radius: 30px;
-}
-
-.reservation-card .badge.bg-success {
-  background-color: #28a745 !important;
-}
-
-.reservation-card .badge.bg-warning {
-  background-color: #ffc107 !important;
-  color: #212529;
-}
-
-.reservation-card .badge.bg-danger {
-  background-color: #dc3545 !important;
-}
-
-/* Estilos para modo oscuro */
-body.dark-mode .reservation-card .card {
-  background-color: var(--secondary-color);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .reservation-card .card-header {
-  background-color: rgba(200, 169, 126, 0.2);
-  border-bottom-color: rgba(200, 169, 126, 0.3);
-}
-
-/* Estilos para el modal de reservas */
-#myReservationsModal .modal-header {
-  border-bottom: 2px solid var(--primary-color);
-}
-
-#myReservationsModal .modal-title {
-  color: var(--primary-color);
-}
-
-/* Estilos para el modo oscuro del modal */
-body.dark-mode #myReservationsModal .modal-content {
-  background-color: var(--secondary-color);
-  color: white;
-}
-
-body.dark-mode #myReservationsModal .modal-header {
-  border-bottom-color: var(--primary-color);
-}
-
-body.dark-mode #myReservationsModal .modal-footer {
-  border-top-color: rgba(255, 255, 255, 0.1);
 }
