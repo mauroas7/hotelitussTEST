@@ -275,26 +275,32 @@ function setupReservationForm() {
         return
       }
 
+      // Obtener el ID de usuario del localStorage si está disponible
       let userId = null
       const userDataStr = localStorage.getItem("currentUserData")
 
       if (userDataStr) {
         try {
           const userData = JSON.parse(userDataStr)
-          if (userData.id) {
+          if (userData && userData.id) {
             userId = userData.id
+            console.log("ID de usuario encontrado en localStorage:", userId)
           }
         } catch (e) {
           console.error("Error al parsear datos de usuario:", e)
         }
       }
 
-      if (!userId) {
-        const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
-        if (!userEmail) {
-          alert("Error: No se pudo identificar al usuario")
-          return
-        }
+      // Si no se encontró el ID, usar el correo electrónico
+      let userEmail = email
+      if (!userEmail) {
+        userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+        console.log("Usando correo electrónico para identificar al usuario:", userEmail)
+      }
+
+      if (!userId && !userEmail) {
+        alert("Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.")
+        return
       }
 
       const submitBtn = document.querySelector('#reservationForm button[type="submit"]')
@@ -309,7 +315,7 @@ function setupReservationForm() {
         fecha_fin: checkOut,
         estado: "pendiente",
         nombre: name,
-        correo: email,
+        correo: userEmail,
         huespedes: guests,
         solicitudes_especiales: specialRequests,
       }
@@ -1009,61 +1015,3 @@ function verifyCode(email, code) {
       document.getElementById("verification-error").style.display = "block"
     })
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("loginForm")
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault()
-
-      const submitBtn = this.querySelector('button[type="submit"]')
-      const originalBtnText = submitBtn.innerHTML
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
-      submitBtn.disabled = true
-
-      const errorMsg = document.getElementById("loginErrorMsg")
-      if (errorMsg) {
-        errorMsg.classList.add("d-none")
-      }
-
-      const email = document.getElementById("loginEmail").value
-      const password = document.getElementById("loginPassword").value
-
-      fetch("https://hotelitus.onrender.com/sesion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`)
-          }
-          return response.json()
-        })
-        .then((data) => {
-          localStorage.setItem("userLoggedIn", "true")
-          localStorage.setItem("usuarioLogueado", email)
-
-          if (data.user) {
-            localStorage.setItem("currentUserData", JSON.stringify(data.user))
-          }
-
-          window.location.href = window.location.origin + "/?logged=true"
-        })
-        .catch((error) => {
-          console.error("Error en inicio de sesión:", error)
-
-          if (errorMsg) {
-            errorMsg.classList.remove("d-none")
-            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
-          }
-
-          submitBtn.innerHTML = originalBtnText
-          submitBtn.disabled = false
-        })
-    })
-  }
-})
