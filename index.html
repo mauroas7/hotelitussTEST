@@ -406,6 +406,7 @@
                             <i class="fas fa-exclamation-triangle me-2"></i>Debes iniciar sesión para realizar una reserva.
                             <a href="#" id="loginFromReservation" class="alert-link">Iniciar sesión</a>
                         </div>
+                        <div id="reservationMessages" class="mt-3"></div>
                         <div class="reservation-info mt-3">
                             <small><i class="fas fa-info-circle me-1"></i> No se realizará ningún cargo hasta confirmar la reserva</small>
                         </div>
@@ -853,7 +854,7 @@
         </div>
     </div>
 
-    <!-- Modal de Iniciar Sesión - CORREGIDO -->
+    <!-- Modal de Iniciar Sesión -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -865,7 +866,6 @@
                     <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
                         Credenciales incorrectas
                     </div>
-                    <!-- FORMULARIO CORREGIDO - Sin action ni method -->
                     <form id="loginForm" novalidate>
                         <div class="mb-3">
                             <label for="loginEmail" class="form-label">Email</label>
