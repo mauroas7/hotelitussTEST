@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupVerificationCode()
   setupReservationForm()
   setupMyReservations()
+  setupLoginForm() // Añadimos esta función
 
   const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
@@ -29,6 +30,87 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
+// NUEVA FUNCIÓN PARA MANEJAR EL LOGIN
+function setupLoginForm() {
+  const loginForm = document.getElementById("loginForm")
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault() // Prevenir el envío tradicional del formulario
+      e.stopPropagation()
+
+      console.log("Formulario de login interceptado correctamente")
+
+      const submitBtn = this.querySelector('button[type="submit"]')
+      const originalBtnText = submitBtn.innerHTML
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+      submitBtn.disabled = true
+
+      const errorMsg = document.getElementById("loginErrorMsg")
+      if (errorMsg) {
+        errorMsg.classList.add("d-none")
+      }
+
+      const email = document.getElementById("loginEmail").value
+      const password = document.getElementById("loginPassword").value
+
+      console.log("Datos de login:", { email: email, password: "***" })
+
+      fetch("https://hotelitus.onrender.com/sesion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+        .then((response) => {
+          console.log("Respuesta del servidor:", response.status)
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`)
+          }
+          return response.json()
+        })
+        .then((data) => {
+          console.log("Login exitoso:", data)
+          
+          // Guardar datos de sesión
+          localStorage.setItem("userLoggedIn", "true")
+          localStorage.setItem("usuarioLogueado", email)
+          localStorage.setItem("currentUserEmail", email)
+
+          if (data.user) {
+            localStorage.setItem("currentUserData", JSON.stringify(data.user))
+          }
+
+          // Cerrar modal
+          const bootstrap = window.bootstrap
+          if (bootstrap) {
+            const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
+            if (loginModal) {
+              loginModal.hide()
+            }
+          }
+
+          // Recargar la página para actualizar la interfaz
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+        })
+        .catch((error) => {
+          console.error("Error en inicio de sesión:", error)
+
+          if (errorMsg) {
+            errorMsg.classList.remove("d-none")
+            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
+          }
+
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+        })
+    })
+  }
+}
 
 function initAOS() {
   const AOS = window.AOS
