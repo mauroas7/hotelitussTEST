@@ -310,6 +310,7 @@ function setupReservationForm() {
         estado: "pendiente",
         nombre: name,
         correo: email,
+        huespedes: guests,
         solicitudes_especiales: specialRequests,
       }
 
@@ -501,6 +502,7 @@ function loadUserReservations() {
             <td>${fechaInicio}</td>
             <td>${fechaFin}</td>
             <td>${getTipoHabitacion(reserva.habitacion_id)}</td>
+            <td>${reserva.huespedes || "-"}</td>
             <td><span class="badge ${estadoClass}">${reserva.estado.toUpperCase()}</span></td>
             <td>
               ${
@@ -756,4 +758,312 @@ function setupUserSession() {
 
   if (isLogged) {
     if (loginLink) loginLink.style.display = "none"
-    if (createUserLink)\
+    if (createUserLink) createUserLink.style.display = "none"
+    if (userProfileDropdown) userProfileDropdown.style.display = "block"
+    loadUserData()
+  } else {
+    if (loginLink) loginLink.style.display = "block"
+    if (createUserLink) createUserLink.style.display = "block"
+    if (userProfileDropdown) userProfileDropdown.style.display = "none"
+  }
+
+  const logoutLink = document.getElementById("logoutLink")
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault()
+      localStorage.removeItem("userLoggedIn")
+      localStorage.removeItem("currentUserEmail")
+      localStorage.removeItem("currentUserData")
+      window.location.reload()
+    })
+  }
+}
+
+function loadUserData() {
+  const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
+
+  if (!userEmail) return
+
+  const cachedUserData = localStorage.getItem("currentUserData")
+  if (cachedUserData) {
+    try {
+      const userData = JSON.parse(cachedUserData)
+      updateUserProfileUI(userData)
+      return
+    } catch (e) {
+      console.error("Error al parsear datos de usuario en caché:", e)
+    }
+  }
+
+  fetch("https://hotelitus.onrender.com/get-user-data", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: userEmail }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Error al obtener datos del usuario")
+      }
+      return response.json()
+    })
+    .then((data) => {
+      if (data && data.success) {
+        localStorage.setItem("currentUserData", JSON.stringify(data.user))
+        updateUserProfileUI(data.user)
+      }
+    })
+    .catch((error) => {
+      console.error("Error al cargar datos del usuario:", error)
+      updateUserProfileUI({
+        nombre: "Usuario",
+        correo: userEmail,
+      })
+    })
+}
+
+function updateUserProfileUI(userData) {
+  const userDisplayName = document.getElementById("userDisplayName")
+  if (userDisplayName) {
+    userDisplayName.textContent = userData.nombre || "Usuario"
+  }
+
+  const userFullName = document.getElementById("userFullName")
+  if (userFullName) {
+    userFullName.textContent = userData.nombre || "Usuario"
+  }
+
+  const userEmail = document.getElementById("userEmail")
+  if (userEmail) {
+    userEmail.textContent = userData.correo || ""
+  }
+
+  const userInitials = document.getElementById("userInitials")
+  if (userInitials && userData.nombre) {
+    const initials = userData.nombre
+      .split(" ")
+      .map((name) => name.charAt(0))
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
+
+    userInitials.textContent = initials || "U"
+  }
+}
+
+function setupVerificationCode() {
+  const verificationInputs = document.querySelectorAll(".verification-input")
+
+  if (verificationInputs.length > 0) {
+    verificationInputs.forEach((input, index) => {
+      input.addEventListener("input", function () {
+        if (this.value.length === 1) {
+          if (index < verificationInputs.length - 1) {
+            verificationInputs[index + 1].focus()
+          }
+        }
+      })
+
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !this.value && index > 0) {
+          verificationInputs[index - 1].focus()
+        }
+      })
+    })
+  }
+
+  const verificationForm = document.getElementById("verificationForm")
+  if (verificationForm) {
+    verificationForm.addEventListener("submit", (e) => {
+      e.preventDefault()
+
+      let code = ""
+      verificationInputs.forEach((input) => {
+        code += input.value
+      })
+
+      const userEmail = localStorage.getItem("pendingVerificationEmail")
+
+      if (code.length === 6 && userEmail) {
+        verifyCode(userEmail, code)
+      } else {
+        document.getElementById("verification-error").style.display = "block"
+      }
+    })
+  }
+
+  const resendCodeBtn = document.getElementById("resendCode")
+  if (resendCodeBtn) {
+    resendCodeBtn.addEventListener("click", function (e) {
+      e.preventDefault()
+
+      const userData = JSON.parse(localStorage.getItem("pendingUserData"))
+
+      if (userData) {
+        this.style.pointerEvents = "none"
+        this.style.opacity = "0.5"
+
+        const countdownEl = document.getElementById("countdown")
+        countdownEl.style.display = "block"
+
+        let seconds = 60
+        countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
+
+        const countdownInterval = setInterval(() => {
+          seconds--
+          countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
+
+          if (seconds <= 0) {
+            clearInterval(countdownInterval)
+            this.style.pointerEvents = "auto"
+            this.style.opacity = "1"
+            countdownEl.style.display = "none"
+          }
+        }, 1000)
+
+        sendVerificationCode(userData)
+      }
+    })
+  }
+}
+
+function sendVerificationCode(userData) {
+  const backendBaseUrl = "https://hotelitus.onrender.com"
+
+  localStorage.setItem("pendingUserData", JSON.stringify(userData))
+  localStorage.setItem("pendingVerificationEmail", userData.correo)
+
+  fetch(`${backendBaseUrl}/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.success) {
+        const bootstrap = window.bootstrap
+        if (bootstrap) {
+          const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
+          if (createUserModal) {
+            createUserModal.hide()
+          }
+
+          setTimeout(() => {
+            const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
+            verificationModal.show()
+            document.querySelector(".verification-input").focus()
+          }, 500)
+        }
+      } else {
+        alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+      }
+    })
+    .catch((error) => {
+      console.error("Error al enviar datos:", error)
+      alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+    })
+}
+
+function verifyCode(email, code) {
+  const backendBaseUrl = "https://hotelitus.onrender.com"
+
+  fetch(`${backendBaseUrl}/verify-code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: email, codigo: code }),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.success) {
+        const bootstrap = window.bootstrap
+        if (bootstrap) {
+          const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
+          if (verificationModal) {
+            verificationModal.hide()
+          }
+        }
+
+        localStorage.removeItem("pendingUserData")
+        localStorage.removeItem("pendingVerificationEmail")
+
+        alert("¡Cuenta creada con éxito! Ahora puede iniciar sesión.")
+
+        setTimeout(() => {
+          const bootstrap = window.bootstrap
+          if (bootstrap) {
+            const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
+            loginModal.show()
+          }
+        }, 500)
+      } else {
+        document.getElementById("verification-error").style.display = "block"
+      }
+    })
+    .catch((error) => {
+      console.error("Error al verificar código:", error)
+      document.getElementById("verification-error").style.display = "block"
+    })
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm")
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault()
+
+      const submitBtn = this.querySelector('button[type="submit"]')
+      const originalBtnText = submitBtn.innerHTML
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
+      submitBtn.disabled = true
+
+      const errorMsg = document.getElementById("loginErrorMsg")
+      if (errorMsg) {
+        errorMsg.classList.add("d-none")
+      }
+
+      const email = document.getElementById("loginEmail").value
+      const password = document.getElementById("loginPassword").value
+
+      fetch("https://hotelitus.onrender.com/sesion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`)
+          }
+          return response.json()
+        })
+        .then((data) => {
+          localStorage.setItem("userLoggedIn", "true")
+          localStorage.setItem("usuarioLogueado", email)
+
+          if (data.user) {
+            localStorage.setItem("currentUserData", JSON.stringify(data.user))
+          }
+
+          window.location.href = window.location.origin + "/?logged=true"
+        })
+        .catch((error) => {
+          console.error("Error en inicio de sesión:", error)
+
+          if (errorMsg) {
+            errorMsg.classList.remove("d-none")
+            errorMsg.textContent = "Error al iniciar sesión. Por favor, verifica tus credenciales."
+          }
+
+          submitBtn.innerHTML = originalBtnText
+          submitBtn.disabled = false
+        })
+    })
+  }
+})
