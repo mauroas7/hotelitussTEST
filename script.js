@@ -314,6 +314,8 @@ function setupReservationForm() {
         solicitudes_especiales: specialRequests,
       }
 
+      console.log("Enviando datos de reserva:", reservationData)
+
       fetch("https://hotelitus.onrender.com/reservar", {
         method: "POST",
         headers: {
@@ -322,12 +324,16 @@ function setupReservationForm() {
         body: JSON.stringify(reservationData),
       })
         .then((response) => {
+          console.log("Respuesta del servidor:", response.status)
           if (!response.ok) {
-            throw new Error("Error al crear la reserva")
+            return response.json().then((err) => {
+              throw new Error(err.message || "Error al crear la reserva")
+            })
           }
           return response.json()
         })
         .then((result) => {
+          console.log("Resultado exitoso:", result)
           submitBtn.innerHTML = originalBtnText
           submitBtn.disabled = false
 
@@ -350,12 +356,12 @@ function setupReservationForm() {
           }
         })
         .catch((error) => {
-          console.error("Error al crear reserva:", error)
+          console.error("Error detallado al crear reserva:", error)
 
           submitBtn.innerHTML = originalBtnText
           submitBtn.disabled = false
 
-          alert("Error al crear la reserva. Por favor, inténtelo de nuevo.")
+          alert("Error al crear la reserva: " + error.message)
         })
     })
   }
@@ -817,7 +823,6 @@ function loadUserData() {
     })
 }
 
-// Añadir esta función para generar las iniciales del usuario
 function updateUserProfileUI(userData) {
   const userDisplayName = document.getElementById("userDisplayName")
   if (userDisplayName) {
@@ -834,16 +839,14 @@ function updateUserProfileUI(userData) {
     userEmail.textContent = userData.correo || ""
   }
 
-  // Generar iniciales para el avatar
   const userInitials = document.getElementById("userInitials")
   if (userInitials && userData.nombre) {
-    // Obtener las iniciales del nombre (primera letra de cada palabra)
     const initials = userData.nombre
       .split(" ")
       .map((name) => name.charAt(0))
       .join("")
       .toUpperCase()
-      .substring(0, 2) // Limitar a 2 caracteres
+      .substring(0, 2)
 
     userInitials.textContent = initials || "U"
   }
