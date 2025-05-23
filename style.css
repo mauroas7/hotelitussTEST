@@ -30,6 +30,150 @@ body {
   scroll-padding-top: 80px;
 }
 
+/* Correcciones de contraste para modo claro y oscuro */
+body.dark-mode {
+  color: #e0e0e0;
+  background-color: var(--dark-color);
+}
+
+/* Corrección para el logo en modo oscuro */
+body.dark-mode .navbar-brand .brand-text {
+  color: #fff !important;
+}
+
+/* Mejoras para el dropdown de perfil */
+#userProfileDropdown .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+#userProfileDropdown .dropdown-toggle:hover {
+  background-color: rgba(200, 169, 126, 0.1);
+}
+
+body.dark-mode #userProfileDropdown .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #c8a97e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+#userProfileDropdown .dropdown-menu {
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  min-width: 240px;
+}
+
+body.dark-mode #userProfileDropdown .dropdown-menu {
+  background-color: #2d2d2d;
+  border-color: #444;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode #userProfileDropdown .dropdown-item {
+  color: #e0e0e0;
+}
+
+body.dark-mode #userProfileDropdown .dropdown-item:hover {
+  background-color: #3d3d3d;
+}
+
+.user-profile-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.dark-mode .user-profile-header {
+  border-bottom: 1px solid #444;
+}
+
+.user-profile-header .user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #c8a97e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 15px;
+}
+
+/* Correcciones para textos en modo oscuro */
+body.dark-mode .card,
+body.dark-mode .modal-content,
+body.dark-mode .testimonial-card,
+body.dark-mode .service-card,
+body.dark-mode .room-card {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+body.dark-mode .card-title,
+body.dark-mode .modal-title,
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6,
+body.dark-mode .section-title,
+body.dark-mode .testimonial-author {
+  color: #fff;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #333;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+body.dark-mode .input-group-text {
+  background-color: #444;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+/* Correcciones para enlaces en modo oscuro */
+body.dark-mode a:not(.btn) {
+  color: #c8a97e;
+}
+
+body.dark-mode a:not(.btn):hover {
+  color: #d9ba8c;
+}
+
+/* Correcciones para textos en modo claro */
+.testimonial-text,
+.card-text,
+.section-subtitle,
+p {
+  color: #555;
+}
+
+body.dark-mode .testimonial-text,
+body.dark-mode .card-text,
+body.dark-mode .section-subtitle,
+body.dark-mode p {
+  color: #ccc;
+}
+
 h1,
 h2,
 h3,
