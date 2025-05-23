@@ -46,9 +46,6 @@
                         <a class="nav-link" href="#servicios">Servicios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#galeria">Galería</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="#reservas">Reservas</a>
                     </li>
                     <li class="nav-item">
@@ -68,33 +65,30 @@
                         </a>
                     </li>
                     
-                  <!-- Perfil de usuario !-->
-<li class="nav-item dropdown" id="userProfileDropdown" style="display: none;">
-  <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="fas fa-user-circle me-1"></i>
-    <span id="userDisplayName">Usuario</span>
-  </a>
-  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-    <li class="dropdown-header">
-      <div class="user-profile-header">
-        <div class="user-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="user-info">
-          <h6 id="userFullName">Nombre Completo</h6>
-          <p id="userEmail" class="text-muted small mb-0">correo@ejemplo.com</p>
-        </div>
-      </div>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-user-edit me-2"></i>Editar perfil</a></li>
-    <li><a class="dropdown-item" href="#" id="myReservationsLink"><i class="fas fa-history me-2"></i>Mis reservas</a></li>
-    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
-  </ul>
-</li>
-
+                    <!-- Perfil de usuario -->
+                    <li class="nav-item dropdown" id="userProfileDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span id="userDisplayName">Usuario</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li class="dropdown-header">
+                                <div class="user-profile-header">
+                                    <div class="user-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="user-info">
+                                        <h6 id="userFullName">Nombre Completo</h6>
+                                        <p id="userEmail" class="text-muted small mb-0">correo@ejemplo.com</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="myReservationsLink"><i class="fas fa-history me-2"></i>Mis reservas</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutLink"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -103,7 +97,6 @@
     <!-- Hero Section -->
     <header id="inicio" class="hero">
         <div class="hero-overlay"></div>
-        <!-- Reemplazar las imágenes del carrusel con imágenes de mejor calidad -->
         <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">
@@ -182,7 +175,7 @@
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="room-card">
                         <div class="room-tag">Popular</div>
-                        <a href="#" class="room-link">
+                        <a href="#reservas" class="room-link">
                             <img src="https://www.derbyhotels.com/files/img/img_s/bg-single-3-930.jpg" class="card-img-top" alt="Habitación Individual">
                         </a>
                         <div class="card-body">
@@ -196,8 +189,8 @@
                                 <span><i class="fas fa-wifi"></i> WiFi</span>
                             </div>
                             <p class="card-text">Perfecta para viajeros solitarios que buscan comodidad y estilo en un espacio íntimo y acogedor.</p>
-                            <a href="#" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-info-circle me-2"></i>Ver detalles
+                            <a href="#reservas" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Reservar
                             </a>
                         </div>
                     </div>
@@ -205,7 +198,7 @@
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="room-card">
                         <div class="room-tag bestseller">Más reservada</div>
-                        <a href="#" class="room-link">
+                        <a href="#reservas" class="room-link">
                             <img src="https://cdn.prod.website-files.com/5faeb38cb5f86ba2c2288cd3/6256f94b472b77aa5ec05264_executive%20double%20double%201.png" class="card-img-top" alt="Habitación Doble">
                         </a>
                         <div class="card-body">
@@ -219,8 +212,8 @@
                                 <span><i class="fas fa-wifi"></i> WiFi</span>
                             </div>
                             <p class="card-text">Ideal para parejas o amigos que desean compartir experiencias en un espacio elegante y confortable.</p>
-                            <a href="#" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-info-circle me-2"></i>Ver detalles
+                            <a href="#reservas" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Reservar
                             </a>
                         </div>
                     </div>
@@ -228,7 +221,7 @@
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
                     <div class="room-card">
                         <div class="room-tag luxury">Lujo</div>
-                        <a href="#" class="room-link">
+                        <a href="#reservas" class="room-link">
                             <img src="https://media.revistaad.es/photos/65c21a5605ba5d3cad2a23ba/16:9/w_2560%2Cc_limit/atr.royalmansion-bedroom2-mr.jpg" class="card-img-top" alt="Suite">
                         </a>
                         <div class="card-body">
@@ -242,18 +235,12 @@
                                 <span><i class="fas fa-wifi"></i> WiFi</span>
                             </div>
                             <p class="card-text">Lujo y comodidad en un espacio amplio y elegantemente decorado con vistas panorámicas a la ciudad.</p>
-                            <a href="#" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-info-circle me-2"></i>Ver detalles
+                            <a href="#reservas" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Reservar
                             </a>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="text-center mt-4" data-aos="fade-up">
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-th-large me-2"></i>Ver todas las habitaciones
-                </a>
             </div>
         </div>
     </section>
@@ -278,7 +265,6 @@
                             <li>Ingredientes locales</li>
                             <li>Carta de vinos premium</li>
                         </ul>
-                        <a href="#" class="btn btn-sm btn-outline-primary">Más información</a>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
@@ -293,7 +279,6 @@
                             <li>Tratamientos faciales</li>
                             <li>Sauna y baño turco</li>
                         </ul>
-                        <a href="#" class="btn btn-sm btn-outline-primary">Más información</a>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
@@ -308,7 +293,6 @@
                             <li>Zona de pesas</li>
                             <li>Entrenadores personales</li>
                         </ul>
-                        <a href="#" class="btn btn-sm btn-outline-primary">Más información</a>
                     </div>
                 </div>
             </div>
@@ -338,90 +322,6 @@
                         <h5>WiFi Gratuito</h5>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Galería Section -->
-    <section id="galeria" class="py-5">
-        <div class="container">
-            <h2 class="section-title text-center" data-aos="fade-up">Galería</h2>
-            <div class="section-divider mx-auto"></div>
-            <p class="section-subtitle text-center mb-5" data-aos="fade-up">Explore nuestras instalaciones a través de imágenes</p>
-
-            <div class="row g-3">
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="100">
-                    <div class="gallery-item">
-                        <img src="https://s3.amazonaws.com/arc-wordpress-client-uploads/infobae-wp/wp-content/uploads/2019/05/20152451/Mandarin-Oriental-Hong-Kong-3.jpg" class="img-fluid gallery-img" alt="Habitación de lujo">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Habitación de Lujo</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="200">
-                    <div class="gallery-item">
-                        <img src="https://e00-expansion.uecdn.es/assets/multimedia/imagenes/2021/04/09/16179881106755.jpg" class="img-fluid gallery-img" alt="Restaurante">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Restaurante Gourmet</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="300">
-                    <div class="gallery-item">
-                        <img src="https://i.pinimg.com/originals/e8/0d/41/e80d413d3871b46620452a13c247675c.jpg" class="img-fluid gallery-img" alt="Piscina">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Piscina Infinita</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="400">
-                    <div class="gallery-item">
-                        <img src="https://media.viajando.travel/p/5afb426c49b440af091dda3822a3e290/adjuntos/236/imagenes/000/692/0000692457/sudamerica-spa-cardalesjpg.jpg" class="img-fluid gallery-img" alt="Spa">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Spa & Wellness</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="500">
-                    <div class="gallery-item">
-                        <img src="https://img.freepik.com/fotos-premium/gimnasio-hotel-lujo_1101236-94.jpg" class="img-fluid gallery-img" alt="Gimnasio">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Gimnasio Moderno</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-6" data-aos="zoom-in" data-aos-delay="600">
-                    <div class="gallery-item">
-                        <img src="https://img.freepik.com/fotos-premium/bar-hotel-lujo-asientos-cuero-larga-barra_14117-711520.jpg" class="img-fluid gallery-img" alt="Bar">
-                        <div class="gallery-overlay">
-                            <div class="gallery-info">
-                                <h5>Bar & Lounge</h5>
-                                <a href="#" class="gallery-icon"><i class="fas fa-expand"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-4" data-aos="fade-up">
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-images me-2"></i>Ver más fotos
-                </a>
             </div>
         </div>
     </section>
@@ -605,12 +505,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="text-center mt-4" data-aos="fade-up">
-                <a href="#" class="btn btn-outline-primary">
-                    <i class="fas fa-comment-alt me-2"></i>Ver todas las opiniones
-                </a>
-            </div>
         </div>
     </section>
 
@@ -788,7 +682,6 @@
                         <li><a href="#inicio">Inicio</a></li>
                         <li><a href="#habitaciones">Habitaciones</a></li>
                         <li><a href="#servicios">Servicios</a></li>
-                        <li><a href="#galeria">Galería</a></li>
                         <li><a href="#reservas">Reservas</a></li>
                         <li><a href="#contacto">Contacto</a></li>
                     </ul>
@@ -796,12 +689,11 @@
                 <div class="col-lg-3 col-md-4 mb-4">
                     <h5>Servicios</h5>
                     <ul class="footer-links">
-                        <li><a href="#">Restaurante Gourmet</a></li>
-                        <li><a href="#">Spa & Wellness</a></li>
-                        <li><a href="#">Gimnasio</a></li>
-                        <li><a href="#">Eventos y Conferencias</a></li>
-                        <li><a href="#">Traslados</a></li>
-                        <li><a href="#">Tours y Excursiones</a></li>
+                        <li><a href="#servicios">Restaurante Gourmet</a></li>
+                        <li><a href="#servicios">Spa & Wellness</a></li>
+                        <li><a href="#servicios">Gimnasio</a></li>
+                        <li><a href="#servicios">Eventos y Conferencias</a></li>
+                        <li><a href="#servicios">Traslados</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-4 mb-4">
@@ -846,216 +738,213 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-<!-- Modal de Crear Usuario -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="createUserForm">
-                    <div class="mb-3">
-                        <label for="userName" class="form-label">Nombre</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" name="nombre" class="form-control" id="userName" 
-                                   placeholder="Ingrese su nombre" 
-                                   pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" 
-                                   title="Por favor ingrese solo letras" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userEmail" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userTelefono" class="form-label">Teléfono</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                            <input type="tel" name="telefono" class="form-control" id="userTelefono" 
-                                   placeholder="Ingrese su teléfono" 
-                                   pattern="[0-9]+" 
-                                   title="Por favor ingrese solo números" 
-                                   required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userPassword" class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
-                        </div>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
-                        <label class="form-check-label" for="termsCheck">
-                            Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-user-plus me-2"></i>Crear Usuario
-                    </button>
-                </form>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="verificationModalLabel">Verificación de código</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="text-center mb-4">
-          <div class="service-icon mb-3">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <p>Hemos enviado un código de verificación a tu correo electrónico. Por favor, introdúcelo a continuación:</p>
-        </div>
-        
-        <form id="verificationForm">
-          <div class="verification-code-container d-flex justify-content-center mb-4">
-            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus>
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input me-2" maxlength="1">
-            <input type="text" class="form-control verification-input" maxlength="1">
-          </div>
-          
-          <div class="text-center mb-3">
-            <div id="verification-error" class="text-danger mb-3" style="display: none;">
-              Código incorrecto. Por favor, inténtalo de nuevo.
-            </div>
-            <button type="submit" class="btn btn-primary">Verificar</button>
-          </div>
-          
-          <div class="text-center mt-3">
-            <p class="mb-0 text-muted">¿No has recibido el código? 
-              <a href="#" id="resendCode" class="text-primary">Reenviar código</a>
-            </p>
-            <div id="countdown" class="text-muted mt-2" style="display: none;"></div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Iniciar Sesión -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
-                  Credenciales incorrectas
+    <!-- Modal de Crear Usuario -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- Update the login form to prevent default submission and use our JavaScript handler -->
-                <form id="loginForm">
-                    <div class="mb-3">
-                        <label for="loginEmail" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" name="email" class="form-control" id="loginEmail" placeholder="Ingrese su email" required>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">Nombre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="nombre" class="form-control" id="userName" 
+                                       placeholder="Ingrese su nombre" 
+                                       pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" 
+                                       title="Por favor ingrese solo letras" 
+                                       required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="loginPassword" class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" name="password" class="form-control" id="loginPassword" placeholder="Ingrese su contraseña" required>
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="correo" class="form-control" id="userEmail" placeholder="Ingrese su email" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="rememberMe">
-                            <label class="form-check-label" for="rememberMe">Recordarme</label>
+                        <div class="mb-3">
+                            <label for="userTelefono" class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" name="telefono" class="form-control" id="userTelefono" 
+                                       placeholder="Ingrese su teléfono" 
+                                       pattern="[0-9]+" 
+                                       title="Por favor ingrese solo números" 
+                                       required>
+                            </div>
                         </div>
-                        <a href="#" class="text-decoration-none">¿Olvidaste tu contraseña?</a>
+                        <div class="mb-3">
+                            <label for="userPassword" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" class="form-control" id="userPassword" placeholder="Cree una contraseña" required>
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <p class="mb-0">¿Ya tienes una cuenta? <a href="#" id="switchToLogin" class="text-decoration-none">Iniciar Sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Verificación -->
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verificationModalLabel">Verificación de código</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="service-icon mb-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <p>Hemos enviado un código de verificación a tu correo electrónico. Por favor, introdúcelo a continuación:</p>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-                    </button>
-                </form>
-                <div id="loginError" class="alert alert-danger mt-3 d-none" role="alert">
-                    Credenciales incorrectas.
+                    <form id="verificationForm">
+                        <div class="verification-code-container d-flex justify-content-center mb-4">
+                            <input type="text" class="form-control verification-input me-2" maxlength="1" autofocus>
+                            <input type="text" class="form-control verification-input me-2" maxlength="1">
+                            <input type="text" class="form-control verification-input me-2" maxlength="1">
+                            <input type="text" class="form-control verification-input me-2" maxlength="1">
+                            <input type="text" class="form-control verification-input me-2" maxlength="1">
+                            <input type="text" class="form-control verification-input" maxlength="1">
+                        </div>
+                        
+                        <div class="text-center mb-3">
+                            <div id="verification-error" class="text-danger mb-3" style="display: none;">
+                                Código incorrecto. Por favor, inténtalo de nuevo.
+                            </div>
+                            <button type="submit" class="btn btn-primary">Verificar</button>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <p class="mb-0 text-muted">¿No has recibido el código? 
+                                <a href="#" id="resendCode" class="text-primary">Reenviar código</a>
+                            </p>
+                            <div id="countdown" class="text-muted mt-2" style="display: none;"></div>
+                        </div>
+                    </form>
                 </div>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <p class="mb-0">¿No tienes una cuenta? <a href="#" id="switchToCreateUser" class="text-decoration-none">Crear Usuario</a></p>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal de Mis Reservas -->
-<div class="modal fade" id="myReservationsModal" tabindex="-1" aria-labelledby="myReservationsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="myReservationsModalLabel">Mis Reservas</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="reservationsLoading" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    <p class="mt-2">Cargando tus reservas...</p>
+    <!-- Modal de Iniciar Sesión -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div id="noReservationsMessage" class="text-center py-4 d-none">
-                    <div class="service-icon mb-3">
-                        <i class="fas fa-calendar-times"></i>
+                <div class="modal-body">
+                    <div id="loginErrorMsg" class="alert alert-danger d-none" role="alert">
+                        Credenciales incorrectas
                     </div>
-                    <h5>No tienes reservas activas</h5>
-                    <p>Realiza tu primera reserva para disfrutar de nuestro hotel.</p>
-                    <a href="#reservas" class="btn btn-primary" data-bs-dismiss="modal">
-                        <i class="fas fa-calendar-plus me-2"></i>Hacer una reserva
-                    </a>
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" id="loginEmail" placeholder="Ingrese su email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" class="form-control" id="loginPassword" placeholder="Ingrese su contraseña" required>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Recordarme</label>
+                            </div>
+                            <a href="#" class="text-decoration-none">¿Olvidaste tu contraseña?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </button>
+                    </form>
                 </div>
-                <div id="reservationsList" class="d-none">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Fecha de entrada</th>
-                                    <th>Fecha de salida</th>
-                                    <th>Tipo de habitación</th>
-                                    <th>Huéspedes</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationsTableBody">
-                                <!-- Las reservas se cargarán aquí dinámicamente -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="modal-footer justify-content-center">
+                    <p class="mb-0">¿No tienes una cuenta? <a href="#" id="switchToCreateUser" class="text-decoration-none">Crear Usuario</a></p>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Modal de Mis Reservas -->
+    <div class="modal fade" id="myReservationsModal" tabindex="-1" aria-labelledby="myReservationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myReservationsModalLabel">Mis Reservas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="reservationsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2">Cargando tus reservas...</p>
+                    </div>
+                    <div id="noReservationsMessage" class="text-center py-4 d-none">
+                        <div class="service-icon mb-3">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <h5>No tienes reservas activas</h5>
+                        <p>Realiza tu primera reserva para disfrutar de nuestro hotel.</p>
+                        <a href="#reservas" class="btn btn-primary" data-bs-dismiss="modal">
+                            <i class="fas fa-calendar-plus me-2"></i>Hacer una reserva
+                        </a>
+                    </div>
+                    <div id="reservationsList" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha de entrada</th>
+                                        <th>Fecha de salida</th>
+                                        <th>Tipo de habitación</th>
+                                        <th>Huéspedes</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservationsTableBody">
+                                    <!-- Las reservas se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
