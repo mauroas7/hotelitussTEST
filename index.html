@@ -667,6 +667,192 @@
         </div>
     </section>
 
+    <!-- Panel de Administración -->
+    <section id="admin-panel" class="py-5" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">Panel de Administración</h2>
+                        <div class="admin-user-info">
+                            <span class="badge bg-primary fs-6">
+                                <i class="fas fa-user-shield me-2"></i>
+                                <span id="adminUserName">Administrador</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Estadísticas Dashboard -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 id="totalUsuarios">0</h4>
+                                            <p class="mb-0">Total Usuarios</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 id="totalReservas">0</h4>
+                                            <p class="mb-0">Total Reservas</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-calendar-check fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 id="reservasActivas">0</h4>
+                                            <p class="mb-0">Reservas Activas</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-bed fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 id="ingresosMes">$0</h4>
+                                            <p class="mb-0">Ingresos del Mes</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navegación de pestañas -->
+                    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="reservas-tab" data-bs-toggle="tab" data-bs-target="#reservas-panel" type="button" role="tab">
+                                <i class="fas fa-calendar-alt me-2"></i>Gestión de Reservas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios-panel" type="button" role="tab">
+                                <i class="fas fa-users me-2"></i>Gestión de Huéspedes
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Contenido de las pestañas -->
+                    <div class="tab-content" id="adminTabsContent">
+                        <!-- Panel de Reservas -->
+                        <div class="tab-pane fade show active" id="reservas-panel" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar-alt me-2"></i>Todas las Reservas
+                                    </h5>
+                                    <button class="btn btn-primary btn-sm" onclick="cargarReservasAdmin()">
+                                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="reservasAdminLoading" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <p class="mt-2">Cargando reservas...</p>
+                                    </div>
+                                    <div id="reservasAdminContent" style="display: none;">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Huésped</th>
+                                                        <th>Contacto</th>
+                                                        <th>Habitación</th>
+                                                        <th>Fecha Entrada</th>
+                                                        <th>Fecha Salida</th>
+                                                        <th>Estado</th>
+                                                        <th>Total</th>
+                                                        <th>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="reservasAdminTableBody">
+                                                    <!-- Las reservas se cargarán aquí -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Usuarios -->
+                        <div class="tab-pane fade" id="usuarios-panel" role="tabpanel">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>Todos los Huéspedes
+                                    </h5>
+                                    <button class="btn btn-primary btn-sm" onclick="cargarUsuariosAdmin()">
+                                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="usuariosAdminLoading" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <p class="mt-2">Cargando huéspedes...</p>
+                                    </div>
+                                    <div id="usuariosAdminContent" style="display: none;">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Nombre</th>
+                                                        <th>Correo</th>
+                                                        <th>Teléfono</th>
+                                                        <th>Total Reservas</th>
+                                                        <th>Última Reserva</th>
+                                                        <th>Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="usuariosAdminTableBody">
+                                                    <!-- Los usuarios se cargarán aquí -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="py-5">
         <div class="container">
