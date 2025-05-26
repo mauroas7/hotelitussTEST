@@ -261,23 +261,21 @@ function setupFormValidation() {
 // Función para mostrar/ocultar panel de administración
 function toggleAdminPanel(show) {
   const adminPanel = document.getElementById("admin-panel")
-  const regularSections = document.querySelectorAll("section:not(#admin-panel)")
+  const regularSections = document.getElementById("regular-sections")
 
   if (show) {
     adminPanel.style.display = "block"
-    regularSections.forEach((section) => {
-      if (section.id !== "admin-panel") {
-        section.style.display = "none"
-      }
-    })
+    if (regularSections) {
+      regularSections.style.display = "none"
+    }
     // Cargar datos del dashboard
     cargarEstadisticasAdmin()
     cargarReservasAdmin()
   } else {
     adminPanel.style.display = "none"
-    regularSections.forEach((section) => {
-      section.style.display = "block"
-    })
+    if (regularSections) {
+      regularSections.style.display = "block"
+    }
   }
 }
 
@@ -330,6 +328,7 @@ function setupLoginFormWithAdmin() {
             if (data.isAdmin) {
               // Es administrador
               localStorage.setItem("isAdmin", "true")
+              localStorage.setItem("userRole", data.user.rol || "Administrador")
               isAdminLoggedIn = true
               currentAdminUser = data.user
 
@@ -348,6 +347,7 @@ function setupLoginFormWithAdmin() {
             } else {
               // Es usuario normal
               localStorage.setItem("isAdmin", "false")
+              localStorage.setItem("userRole", "Usuario")
 
               // Cerrar modal
               const bootstrap = window.bootstrap
@@ -358,8 +358,9 @@ function setupLoginFormWithAdmin() {
                 }
               }
 
-              // Recargar la página para actualizar el estado de sesión
-              window.location.reload()
+              // Mostrar secciones normales
+              toggleAdminPanel(false)
+              updateUserUI()
             }
           } else {
             errorMsg.textContent = data.message || "Credenciales incorrectas"
@@ -379,9 +380,53 @@ function setupLoginFormWithAdmin() {
 
 // Función para actualizar la UI del administrador
 function updateAdminUI() {
+  const loginLink = document.getElementById("loginLink")
+  const createUserLink = document.getElementById("createUserLink")
+  const userProfileDropdown = document.getElementById("userProfileDropdown")
+  const userInitials = document.getElementById("userInitials")
+  const userDisplayName = document.getElementById("userDisplayName")
+  const userFullName = document.getElementById("userFullName")
+  const userRole = document.getElementById("userRole")
   const adminUserName = document.getElementById("adminUserName")
-  if (adminUserName && currentAdminUser) {
-    adminUserName.textContent = currentAdminUser.nombre
+
+  if (loginLink) loginLink.style.display = "none"
+  if (createUserLink) createUserLink.style.display = "none"
+  if (userProfileDropdown) userProfileDropdown.style.display = "block"
+
+  if (currentAdminUser) {
+    const role = currentAdminUser.rol || "Administrador"
+    
+    if (userInitials) {
+      userInitials.textContent = currentAdminUser.nombre ? currentAdminUser.nombre.charAt(0).toUpperCase() : "A"
+    }
+    if (userDisplayName) {
+      userDisplayName.textContent = role
+    }
+    if (userFullName) {
+      userFullName.textContent = currentAdminUser.nombre || "Administrador"
+    }
+    if (userRole) {
+      userRole.textContent = role
+    }
+    if (adminUserName) {
+      adminUserName.textContent = currentAdminUser.nombre || "Administrador"
+    }
+  }
+}
+
+// Función para actualizar la UI del usuario normal
+function updateUserUI() {
+  const loginLink = document.getElementById("loginLink")
+  const createUserLink = document.getElementById("createUserLink")
+  const userProfileDropdown = document.getElementById("userProfileDropdown")
+
+  if (loginLink) loginLink.style.display = "none"
+  if (createUserLink) createUserLink.style.display = "none"
+  if (userProfileDropdown) userProfileDropdown.style.display = "block"
+
+  const userEmail = localStorage.getItem("currentUserEmail")
+  if (userEmail) {
+    updateUIForLoggedInUser(userEmail)
   }
 }
 
@@ -605,6 +650,7 @@ function setupLogoutWithAdmin() {
       localStorage.removeItem("currentUserEmail")
       localStorage.removeItem("currentUserData")
       localStorage.removeItem("isAdmin")
+      localStorage.removeItem("userRole")
 
       // Resetear variables globales
       isAdminLoggedIn = false
@@ -636,6 +682,10 @@ function checkAdminSession() {
         console.error("Error al parsear datos de admin:", e)
       }
     }
+  } else if (isLoggedIn) {
+    // Usuario normal logueado
+    toggleAdminPanel(false)
+    updateUserUI()
   }
 }
 
@@ -1144,7 +1194,7 @@ function updateUIForLoggedInUser(email) {
         const userInitials = document.getElementById("userInitials")
         const userDisplayName = document.getElementById("userDisplayName")
         const userFullName = document.getElementById("userFullName")
-        const userEmailElement = document.getElementById("userEmail")
+        const userRole = document.getElementById("userRole")
 
         if (userInitials) {
           userInitials.textContent = user.nombre.charAt(0).toUpperCase()
@@ -1155,8 +1205,8 @@ function updateUIForLoggedInUser(email) {
         if (userFullName) {
           userFullName.textContent = user.nombre
         }
-        if (userEmailElement) {
-          userEmailElement.textContent = user.correo
+        if (userRole) {
+          userRole.textContent = "Usuario"
         }
 
         localStorage.setItem("currentUserData", JSON.stringify(user))
