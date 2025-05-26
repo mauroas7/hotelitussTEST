@@ -281,6 +281,56 @@ function toggleAdminPanel(show) {
   }
 }
 
+// Función para actualizar la UI según el tipo de usuario
+function updateUIForAdmin(isAdmin, userData) {
+  const normalNavigation = document.getElementById("normalNavigation")
+  const userProfileDropdown = document.getElementById("userProfileDropdown")
+  const adminProfileDropdown = document.getElementById("adminProfileDropdown")
+  const heroButtons = document.getElementById("heroButtons")
+
+  if (isAdmin) {
+    // Ocultar navegación normal
+    if (normalNavigation) normalNavigation.style.display = "none"
+    if (userProfileDropdown) userProfileDropdown.style.display = "none"
+    if (heroButtons) heroButtons.style.display = "none"
+
+    // Mostrar perfil de admin
+    if (adminProfileDropdown) {
+      adminProfileDropdown.style.display = "block"
+
+      // Actualizar información del admin
+      const adminInitials = document.getElementById("adminInitials")
+      const adminDisplayName = document.getElementById("adminDisplayName")
+      const adminFullName = document.getElementById("adminFullName")
+      const adminEmail = document.getElementById("adminEmail")
+
+      if (adminInitials && userData.nombre) {
+        adminInitials.textContent = userData.nombre.charAt(0).toUpperCase()
+      }
+      if (adminDisplayName) {
+        adminDisplayName.textContent = userData.nombre
+      }
+      if (adminFullName) {
+        adminFullName.textContent = userData.nombre
+      }
+      if (adminEmail) {
+        adminEmail.textContent = userData.correo
+      }
+    }
+
+    // Mostrar panel de administración
+    toggleAdminPanel(true)
+  } else {
+    // Mostrar navegación normal
+    if (normalNavigation) normalNavigation.style.display = "block"
+    if (adminProfileDropdown) adminProfileDropdown.style.display = "none"
+    if (heroButtons) heroButtons.style.display = "block"
+
+    // Ocultar panel de administración
+    toggleAdminPanel(false)
+  }
+}
+
 // Modificar la función de login existente para detectar administradores
 function setupLoginFormWithAdmin() {
   const loginForm = document.getElementById("loginForm")
@@ -342,9 +392,8 @@ function setupLoginFormWithAdmin() {
                 }
               }
 
-              // Mostrar panel de administración
-              toggleAdminPanel(true)
-              updateAdminUI()
+              // Actualizar UI para admin
+              updateUIForAdmin(true, data.user)
             } else {
               // Es usuario normal
               localStorage.setItem("isAdmin", "false")
@@ -374,14 +423,6 @@ function setupLoginFormWithAdmin() {
           errorMsg.classList.remove("d-none")
         })
     })
-  }
-}
-
-// Función para actualizar la UI del administrador
-function updateAdminUI() {
-  const adminUserName = document.getElementById("adminUserName")
-  if (adminUserName && currentAdminUser) {
-    adminUserName.textContent = currentAdminUser.nombre
   }
 }
 
@@ -596,27 +637,41 @@ function actualizarEstadoReserva(reservaId, nuevoEstado) {
 // Modificar la función de logout para manejar administradores
 function setupLogoutWithAdmin() {
   const logoutLink = document.getElementById("logoutLink")
+  const adminLogoutLink = document.getElementById("adminLogoutLink")
+
+  // Logout para usuarios normales
   if (logoutLink) {
     logoutLink.addEventListener("click", (e) => {
       e.preventDefault()
-
-      // Limpiar datos de sesión
-      localStorage.removeItem("userLoggedIn")
-      localStorage.removeItem("currentUserEmail")
-      localStorage.removeItem("currentUserData")
-      localStorage.removeItem("isAdmin")
-
-      // Resetear variables globales
-      isAdminLoggedIn = false
-      currentAdminUser = null
-
-      // Mostrar secciones normales y ocultar panel de admin
-      toggleAdminPanel(false)
-
-      // Recargar la página
-      window.location.reload()
+      performLogout()
     })
   }
+
+  // Logout para administradores
+  if (adminLogoutLink) {
+    adminLogoutLink.addEventListener("click", (e) => {
+      e.preventDefault()
+      performLogout()
+    })
+  }
+}
+
+function performLogout() {
+  // Limpiar datos de sesión
+  localStorage.removeItem("userLoggedIn")
+  localStorage.removeItem("currentUserEmail")
+  localStorage.removeItem("currentUserData")
+  localStorage.removeItem("isAdmin")
+
+  // Resetear variables globales
+  isAdminLoggedIn = false
+  currentAdminUser = null
+
+  // Restaurar UI normal
+  updateUIForAdmin(false, null)
+
+  // Recargar la página
+  window.location.reload()
 }
 
 // Función para verificar si el usuario es admin al cargar la página
@@ -630,8 +685,7 @@ function checkAdminSession() {
       try {
         currentAdminUser = JSON.parse(userData)
         isAdminLoggedIn = true
-        toggleAdminPanel(true)
-        updateAdminUI()
+        updateUIForAdmin(true, currentAdminUser)
       } catch (e) {
         console.error("Error al parsear datos de admin:", e)
       }
