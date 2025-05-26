@@ -16,7 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReservationForm()
   setupMyReservations()
   setupDateConstraints()
-  setupLoginForm()
+
+  // Nuevas funciones para administración
+  setupLoginFormWithAdmin()
+  setupLogoutWithAdmin()
+  checkAdminSession()
 
   const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
@@ -31,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
+// Variables globales para administración
+let isAdminLoggedIn = false
+let currentAdminUser = null
 
 function initAOS() {
   const AOS = window.AOS
@@ -250,7 +258,31 @@ function setupFormValidation() {
   }
 }
 
-function setupLoginForm() {
+// Función para mostrar/ocultar panel de administración
+function toggleAdminPanel(show) {
+  const adminPanel = document.getElementById("admin-panel")
+  const regularSections = document.querySelectorAll("section:not(#admin-panel)")
+
+  if (show) {
+    adminPanel.style.display = "block"
+    regularSections.forEach((section) => {
+      if (section.id !== "admin-panel") {
+        section.style.display = "none"
+      }
+    })
+    // Cargar datos del dashboard
+    cargarEstadisticasAdmin()
+    cargarReservasAdmin()
+  } else {
+    adminPanel.style.display = "none"
+    regularSections.forEach((section) => {
+      section.style.display = "block"
+    })
+  }
+}
+
+// Modificar la función de login existente para detectar administradores
+function setupLoginFormWithAdmin() {
   const loginForm = document.getElementById("loginForm")
 
   if (loginForm) {
@@ -272,8 +304,8 @@ function setupLoginForm() {
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'
       submitBtn.disabled = true
 
-      // CORREGIDO: Cambiar de /login a /sesion para coincidir con el backend
-      fetch("https://hotelitus.onrender.com/sesion", {
+      // Usar el endpoint de admin-login que maneja tanto admins como usuarios
+      fetch("https://hotelitus.onrender.com/admin-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -293,18 +325,42 @@ function setupLoginForm() {
             localStorage.setItem("userLoggedIn", "true")
             localStorage.setItem("usuarioLogueado", email)
             localStorage.setItem("currentUserEmail", email)
+            localStorage.setItem("currentUserData", JSON.stringify(data.user))
 
-            // Cerrar modal
-            const bootstrap = window.bootstrap
-            if (bootstrap) {
-              const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
-              if (loginModal) {
-                loginModal.hide()
+            if (data.isAdmin) {
+              // Es administrador
+              localStorage.setItem("isAdmin", "true")
+              isAdminLoggedIn = true
+              currentAdminUser = data.user
+
+              // Cerrar modal
+              const bootstrap = window.bootstrap
+              if (bootstrap) {
+                const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
+                if (loginModal) {
+                  loginModal.hide()
+                }
               }
-            }
 
-            // Recargar la página para actualizar el estado de sesión
-            window.location.reload()
+              // Mostrar panel de administración
+              toggleAdminPanel(true)
+              updateAdminUI()
+            } else {
+              // Es usuario normal
+              localStorage.setItem("isAdmin", "false")
+
+              // Cerrar modal
+              const bootstrap = window.bootstrap
+              if (bootstrap) {
+                const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"))
+                if (loginModal) {
+                  loginModal.hide()
+                }
+              }
+
+              // Recargar la página para actualizar el estado de sesión
+              window.location.reload()
+            }
           } else {
             errorMsg.textContent = data.message || "Credenciales incorrectas"
             errorMsg.classList.remove("d-none")
@@ -318,6 +374,268 @@ function setupLoginForm() {
           errorMsg.classList.remove("d-none")
         })
     })
+  }
+}
+
+// Función para actualizar la UI del administrador
+function updateAdminUI() {
+  const adminUserName = document.getElementById("adminUserName")
+  if (adminUserName && currentAdminUser) {
+    adminUserName.textContent = currentAdminUser.nombre
+  }
+}
+
+// Función para cargar estadísticas del dashboard
+function cargarEstadisticasAdmin() {
+  const adminEmail = localStorage.getItem("currentUserEmail")
+
+  fetch("https://hotelitus.onrender.com/admin/estadisticas", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: adminEmail }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        document.getElementById("totalUsuarios").textContent = data.estadisticas.totalUsuarios
+        document.getElementById("totalReservas").textContent = data.estadisticas.totalReservas
+        document.getElementById("reservasActivas").textContent = data.estadisticas.reservasActivas
+        document.getElementById("ingresosMes").textContent = `$${data.estadisticas.ingresosMes.toFixed(2)}`
+      }
+    })
+    .catch((error) => {
+      console.error("Error al cargar estadísticas:", error)
+    })
+}
+
+// Función para cargar reservas en el panel de administración
+function cargarReservasAdmin() {
+  const adminEmail = localStorage.getItem("currentUserEmail")
+  const loadingDiv = document.getElementById("reservasAdminLoading")
+  const contentDiv = document.getElementById("reservasAdminContent")
+  const tableBody = document.getElementById("reservasAdminTableBody")
+
+  loadingDiv.style.display = "block"
+  contentDiv.style.display = "none"
+
+  fetch("https://hotelitus.onrender.com/admin/reservas", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: adminEmail }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingDiv.style.display = "none"
+      contentDiv.style.display = "block"
+
+      if (data.success) {
+        tableBody.innerHTML = ""
+
+        data.reservas.forEach((reserva) => {
+          const fechaInicio = new Date(reserva.fecha_inicio).toLocaleDateString()
+          const fechaFin = new Date(reserva.fecha_fin).toLocaleDateString()
+          const dias = Math.ceil((new Date(reserva.fecha_fin) - new Date(reserva.fecha_inicio)) / (1000 * 60 * 60 * 24))
+          const total = (reserva.precio_por_noche * dias).toFixed(2)
+
+          let estadoClass = ""
+          if (reserva.estado === "confirmada") estadoClass = "bg-success"
+          else if (reserva.estado === "pendiente") estadoClass = "bg-warning"
+          else if (reserva.estado === "cancelada") estadoClass = "bg-danger"
+
+          const row = document.createElement("tr")
+          row.innerHTML = `
+                        <td>${reserva.id}</td>
+                        <td>
+                            <strong>${reserva.usuario_nombre}</strong>
+                        </td>
+                        <td>
+                            <small>
+                                <i class="fas fa-envelope me-1"></i>${reserva.usuario_correo}<br>
+                                <i class="fas fa-phone me-1"></i>${reserva.usuario_telefono || "N/A"}
+                            </small>
+                        </td>
+                        <td>
+                            ${reserva.habitacion_tipo} #${reserva.habitacion_numero}<br>
+                            <small class="text-muted">$${reserva.precio_por_noche}/noche</small>
+                        </td>
+                        <td>${fechaInicio}</td>
+                        <td>${fechaFin}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">${reserva.estado.toUpperCase()}</span>
+                        </td>
+                        <td><strong>$${total}</strong></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                ${
+                                  reserva.estado === "pendiente"
+                                    ? `<button class="btn btn-success btn-sm" onclick="actualizarEstadoReserva(${reserva.id}, 'confirmada')">
+                                        <i class="fas fa-check"></i>
+                                    </button>`
+                                    : ""
+                                }
+                                ${
+                                  reserva.estado !== "cancelada"
+                                    ? `<button class="btn btn-danger btn-sm" onclick="actualizarEstadoReserva(${reserva.id}, 'cancelada')">
+                                        <i class="fas fa-times"></i>
+                                    </button>`
+                                    : ""
+                                }
+                            </div>
+                        </td>
+                    `
+          tableBody.appendChild(row)
+        })
+      }
+    })
+    .catch((error) => {
+      console.error("Error al cargar reservas:", error)
+      loadingDiv.style.display = "none"
+    })
+}
+
+// Función para cargar usuarios en el panel de administración
+function cargarUsuariosAdmin() {
+  const adminEmail = localStorage.getItem("currentUserEmail")
+  const loadingDiv = document.getElementById("usuariosAdminLoading")
+  const contentDiv = document.getElementById("usuariosAdminContent")
+  const tableBody = document.getElementById("usuariosAdminTableBody")
+
+  loadingDiv.style.display = "block"
+  contentDiv.style.display = "none"
+
+  fetch("https://hotelitus.onrender.com/admin/usuarios", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ correo: adminEmail }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingDiv.style.display = "none"
+      contentDiv.style.display = "block"
+
+      if (data.success) {
+        tableBody.innerHTML = ""
+
+        data.usuarios.forEach((usuario) => {
+          const ultimaReserva = usuario.ultima_reserva ? new Date(usuario.ultima_reserva).toLocaleDateString() : "Nunca"
+
+          const estadoCliente = usuario.total_reservas > 0 ? "Activo" : "Nuevo"
+          const estadoClass = usuario.total_reservas > 0 ? "bg-success" : "bg-secondary"
+
+          const row = document.createElement("tr")
+          row.innerHTML = `
+                        <td>${usuario.id}</td>
+                        <td>
+                            <strong>${usuario.nombre}</strong>
+                        </td>
+                        <td>
+                            <i class="fas fa-envelope me-1"></i>${usuario.correo}
+                        </td>
+                        <td>
+                            <i class="fas fa-phone me-1"></i>${usuario.telefono || "N/A"}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">${usuario.total_reservas}</span>
+                        </td>
+                        <td>${ultimaReserva}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">${estadoCliente}</span>
+                        </td>
+                    `
+          tableBody.appendChild(row)
+        })
+      }
+    })
+    .catch((error) => {
+      console.error("Error al cargar usuarios:", error)
+      loadingDiv.style.display = "none"
+    })
+}
+
+// Función para actualizar estado de reserva
+function actualizarEstadoReserva(reservaId, nuevoEstado) {
+  const adminEmail = localStorage.getItem("currentUserEmail")
+
+  if (!confirm(`¿Está seguro que desea ${nuevoEstado === "confirmada" ? "confirmar" : "cancelar"} esta reserva?`)) {
+    return
+  }
+
+  fetch("https://hotelitus.onrender.com/admin/actualizar-reserva", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      correo: adminEmail,
+      reservaId: reservaId,
+      nuevoEstado: nuevoEstado,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Estado de reserva actualizado correctamente")
+        cargarReservasAdmin() // Recargar la tabla
+        cargarEstadisticasAdmin() // Actualizar estadísticas
+      } else {
+        alert("Error al actualizar la reserva: " + data.message)
+      }
+    })
+    .catch((error) => {
+      console.error("Error al actualizar reserva:", error)
+      alert("Error al actualizar la reserva")
+    })
+}
+
+// Modificar la función de logout para manejar administradores
+function setupLogoutWithAdmin() {
+  const logoutLink = document.getElementById("logoutLink")
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault()
+
+      // Limpiar datos de sesión
+      localStorage.removeItem("userLoggedIn")
+      localStorage.removeItem("currentUserEmail")
+      localStorage.removeItem("currentUserData")
+      localStorage.removeItem("isAdmin")
+
+      // Resetear variables globales
+      isAdminLoggedIn = false
+      currentAdminUser = null
+
+      // Mostrar secciones normales y ocultar panel de admin
+      toggleAdminPanel(false)
+
+      // Recargar la página
+      window.location.reload()
+    })
+  }
+}
+
+// Función para verificar si el usuario es admin al cargar la página
+function checkAdminSession() {
+  const isAdmin = localStorage.getItem("isAdmin") === "true"
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true"
+
+  if (isLoggedIn && isAdmin) {
+    const userData = localStorage.getItem("currentUserData")
+    if (userData) {
+      try {
+        currentAdminUser = JSON.parse(userData)
+        isAdminLoggedIn = true
+        toggleAdminPanel(true)
+        updateAdminUI()
+      } catch (e) {
+        console.error("Error al parsear datos de admin:", e)
+      }
+    }
   }
 }
 
@@ -694,93 +1012,59 @@ function cancelReservation(reservaId) {
     })
     .catch((error) => {
       console.error("Error al cancelar reserva:", error)
-      alert("Error al cancelar la reserva. Por favor, inténtelo de nuevo.")
+      alert("Error al cancelar la reserva")
     })
 }
 
-function getTipoHabitacion(id) {
-  const tiposHabitacion = {
-    1: "Habitación Individual",
-    2: "Habitación Doble",
-    3: "Suite Ejecutiva",
+function getTipoHabitacion(habitacionId) {
+  const tipos = {
+    1: "Individual",
+    2: "Doble",
+    3: "Suite",
   }
-
-  return tiposHabitacion[id] || `Habitación ${id}`
-}
-
-function setupFieldValidation() {
-  const nombreInput = document.getElementById("userName")
-  if (nombreInput) {
-    nombreInput.setAttribute("pattern", "[A-Za-zÁáÉéÍíÓóÚúÑñs]+")
-    nombreInput.setAttribute("title", "Por favor ingrese solo letras")
-
-    nombreInput.addEventListener("input", function () {
-      this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, "")
-    })
-  }
-
-  const telefonoInput = document.getElementById("userTelefono")
-  if (telefonoInput) {
-    telefonoInput.setAttribute("pattern", "[0-9]+")
-    telefonoInput.setAttribute("title", "Por favor ingrese solo números")
-
-    telefonoInput.addEventListener("input", function () {
-      this.value = this.value.replace(/[^0-9]/g, "")
-    })
-  }
+  return tipos[habitacionId] || "Desconocido"
 }
 
 function initTooltips() {
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-  if (tooltipTriggerList.length > 0) {
-    try {
-      const bootstrap = window.bootstrap
-      if (bootstrap) {
-        const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
-      }
-    } catch (error) {
-      console.error("Error al inicializar tooltips:", error)
-    }
+  const bootstrap = window.bootstrap
+  if (bootstrap && bootstrap.Tooltip) {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl))
   }
 }
 
 function setupCounterAnimation() {
-  function animateCounter(el, target) {
-    let count = 0
-    const speed = 2000 / target
-    const counter = setInterval(() => {
-      count++
-      el.textContent = count
-      if (count >= target) {
-        clearInterval(counter)
-      }
-    }, speed)
+  const counters = document.querySelectorAll(".counter")
+  const observerOptions = {
+    threshold: 0.7,
   }
 
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.target.classList.contains("years")) {
-          const targetValue = Number.parseInt(entry.target.textContent) || 0
-          if (targetValue > 0) {
-            animateCounter(entry.target, targetValue)
-            observer.unobserve(entry.target)
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const counter = entry.target
+        const target = Number.parseInt(counter.getAttribute("data-target"))
+        const increment = target / 100
+
+        let current = 0
+        const timer = setInterval(() => {
+          current += increment
+          counter.textContent = Math.floor(current)
+
+          if (current >= target) {
+            counter.textContent = target
+            clearInterval(timer)
           }
-        }
-      })
-    })
+        }, 20)
 
-    document.querySelectorAll(".years").forEach((el) => {
-      observer.observe(el)
-    })
-  } else {
-    document.querySelectorAll(".years").forEach((el) => {
-      const targetValue = Number.parseInt(el.textContent) || 0
-      if (targetValue > 0) {
-        animateCounter(el, targetValue)
+        observer.unobserve(counter)
       }
     })
-  }
+  }, observerOptions)
+
+  counters.forEach((counter) => {
+    observer.observe(counter)
+  })
 }
 
 function handleResponsiveNav() {
@@ -788,32 +1072,19 @@ function handleResponsiveNav() {
   const navbarCollapse = document.querySelector(".navbar-collapse")
 
   if (navbarToggler && navbarCollapse) {
-    document.querySelectorAll(".navbar-nav .nav-link").forEach((link) => {
-      link.addEventListener("click", () => {
-        if (window.innerWidth < 992) {
-          try {
-            const bootstrap = window.bootstrap
-            if (bootstrap) {
-              const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse)
-              if (bsCollapse) {
-                bsCollapse.hide()
-              }
-            } else {
-              navbarCollapse.classList.remove("show")
-            }
-          } catch (error) {
-            console.error("Error al cerrar el menú móvil:", error)
-            navbarCollapse.classList.remove("show")
-          }
+    document.addEventListener("click", (e) => {
+      if (!navbarToggler.contains(e.target) && !navbarCollapse.contains(e.target)) {
+        const bsCollapse = window.bootstrap?.Collapse?.getInstance(navbarCollapse)
+        if (bsCollapse) {
+          bsCollapse.hide()
         }
-      })
+      }
     })
   }
 }
 
 function handleNavbarScroll() {
   const navbar = document.querySelector(".navbar")
-
   if (navbar) {
     window.addEventListener("scroll", () => {
       if (window.scrollY > 50) {
@@ -821,250 +1092,122 @@ function handleNavbarScroll() {
       } else {
         navbar.classList.remove("scrolled")
       }
-
-      updateActiveNavLink()
     })
-
-    if (window.scrollY > 50) {
-      navbar.classList.add("scrolled")
-    }
-
-    updateActiveNavLink()
   }
 }
 
-function updateActiveNavLink() {
-  const sections = document.querySelectorAll("section[id], header[id]")
-  const navLinks = document.querySelectorAll(".navbar-nav .nav-link:not(.btn)")
+function setupFieldValidation() {
+  const nameField = document.getElementById("userName")
+  if (nameField) {
+    nameField.addEventListener("input", function () {
+      this.value = this.value.replace(/[^A-Za-zÁáÉéÍíÓóÚúÑñ\s]/g, "")
+    })
+  }
 
-  let currentSection = ""
-  const scrollPosition = window.scrollY + 200
-
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop
-    const sectionHeight = section.offsetHeight
-
-    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-      currentSection = section.getAttribute("id")
-    }
-  })
-
-  navLinks.forEach((link) => {
-    link.classList.remove("active")
-    const href = link.getAttribute("href")
-    if (href === `#${currentSection}`) {
-      link.classList.add("active")
-    }
-  })
-
-  if (window.scrollY < 100) {
-    navLinks.forEach((link) => {
-      link.classList.remove("active")
-      if (link.getAttribute("href") === "#inicio") {
-        link.classList.add("active")
-      }
+  const phoneField = document.getElementById("userTelefono")
+  if (phoneField) {
+    phoneField.addEventListener("input", function () {
+      this.value = this.value.replace(/[^0-9]/g, "")
     })
   }
 }
 
 function setupUserSession() {
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true"
+  const userEmail = localStorage.getItem("currentUserEmail")
+
+  if (isLoggedIn && userEmail) {
+    updateUIForLoggedInUser(userEmail)
+  }
+}
+
+function updateUIForLoggedInUser(email) {
   const loginLink = document.getElementById("loginLink")
   const createUserLink = document.getElementById("createUserLink")
   const userProfileDropdown = document.getElementById("userProfileDropdown")
 
-  const urlParams = new URLSearchParams(window.location.search)
-  const loggedIn = urlParams.get("logged")
-
-  if (loggedIn === "true") {
-    localStorage.setItem("userLoggedIn", "true")
-    const userEmail = localStorage.getItem("usuarioLogueado")
-    if (userEmail) {
-      localStorage.setItem("currentUserEmail", userEmail)
-    }
-    window.history.replaceState({}, document.title, "/")
-  }
-
-  const isLogged = localStorage.getItem("userLoggedIn") === "true"
-
-  if (isLogged) {
-    if (loginLink) loginLink.style.display = "none"
-    if (createUserLink) createUserLink.style.display = "none"
-    if (userProfileDropdown) userProfileDropdown.style.display = "block"
-    loadUserData()
-  } else {
-    if (loginLink) loginLink.style.display = "block"
-    if (createUserLink) createUserLink.style.display = "block"
-    if (userProfileDropdown) userProfileDropdown.style.display = "none"
-  }
-
-  const logoutLink = document.getElementById("logoutLink")
-  if (logoutLink) {
-    logoutLink.addEventListener("click", (e) => {
-      e.preventDefault()
-      localStorage.removeItem("userLoggedIn")
-      localStorage.removeItem("currentUserEmail")
-      localStorage.removeItem("currentUserData")
-      window.location.reload()
-    })
-  }
-}
-
-function loadUserData() {
-  const userEmail = localStorage.getItem("currentUserEmail") || localStorage.getItem("usuarioLogueado")
-
-  if (!userEmail) return
-
-  const cachedUserData = localStorage.getItem("currentUserData")
-  if (cachedUserData) {
-    try {
-      const userData = JSON.parse(cachedUserData)
-      updateUserProfileUI(userData)
-      return
-    } catch (e) {
-      console.error("Error al parsear datos de usuario en caché:", e)
-    }
-  }
+  if (loginLink) loginLink.style.display = "none"
+  if (createUserLink) createUserLink.style.display = "none"
+  if (userProfileDropdown) userProfileDropdown.style.display = "block"
 
   fetch("https://hotelitus.onrender.com/get-user-data", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ correo: userEmail }),
+    body: JSON.stringify({ correo: email }),
   })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Error al obtener datos del usuario")
-      }
-      return response.json()
-    })
+    .then((response) => response.json())
     .then((data) => {
-      if (data && data.success) {
-        localStorage.setItem("currentUserData", JSON.stringify(data.user))
-        updateUserProfileUI(data.user)
+      if (data.success) {
+        const user = data.user
+        const userInitials = document.getElementById("userInitials")
+        const userDisplayName = document.getElementById("userDisplayName")
+        const userFullName = document.getElementById("userFullName")
+        const userEmailElement = document.getElementById("userEmail")
+
+        if (userInitials) {
+          userInitials.textContent = user.nombre.charAt(0).toUpperCase()
+        }
+        if (userDisplayName) {
+          userDisplayName.textContent = user.nombre.split(" ")[0]
+        }
+        if (userFullName) {
+          userFullName.textContent = user.nombre
+        }
+        if (userEmailElement) {
+          userEmailElement.textContent = user.correo
+        }
+
+        localStorage.setItem("currentUserData", JSON.stringify(user))
       }
     })
     .catch((error) => {
-      console.error("Error al cargar datos del usuario:", error)
-      updateUserProfileUI({
-        nombre: "Usuario",
-        correo: userEmail,
-      })
+      console.error("Error al obtener datos del usuario:", error)
     })
-}
-
-function updateUserProfileUI(userData) {
-  const userDisplayName = document.getElementById("userDisplayName")
-  if (userDisplayName) {
-    userDisplayName.textContent = userData.nombre || "Usuario"
-  }
-
-  const userFullName = document.getElementById("userFullName")
-  if (userFullName) {
-    userFullName.textContent = userData.nombre || "Usuario"
-  }
-
-  const userEmail = document.getElementById("userEmail")
-  if (userEmail) {
-    userEmail.textContent = userData.correo || ""
-  }
-
-  const userInitials = document.getElementById("userInitials")
-  if (userInitials && userData.nombre) {
-    const initials = userData.nombre
-      .split(" ")
-      .map((name) => name.charAt(0))
-      .join("")
-      .toUpperCase()
-      .substring(0, 2)
-
-    userInitials.textContent = initials || "U"
-  }
 }
 
 function setupVerificationCode() {
   const verificationInputs = document.querySelectorAll(".verification-input")
 
-  if (verificationInputs.length > 0) {
-    verificationInputs.forEach((input, index) => {
-      input.addEventListener("input", function () {
-        if (this.value.length === 1) {
-          if (index < verificationInputs.length - 1) {
-            verificationInputs[index + 1].focus()
-          }
-        }
-      })
-
-      input.addEventListener("keydown", function (e) {
-        if (e.key === "Backspace" && !this.value && index > 0) {
-          verificationInputs[index - 1].focus()
-        }
-      })
+  verificationInputs.forEach((input, index) => {
+    input.addEventListener("input", function () {
+      if (this.value.length === 1 && index < verificationInputs.length - 1) {
+        verificationInputs[index + 1].focus()
+      }
     })
-  }
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && this.value === "" && index > 0) {
+        verificationInputs[index - 1].focus()
+      }
+    })
+  })
 
   const verificationForm = document.getElementById("verificationForm")
   if (verificationForm) {
     verificationForm.addEventListener("submit", (e) => {
       e.preventDefault()
 
-      let code = ""
-      verificationInputs.forEach((input) => {
-        code += input.value
-      })
+      const code = Array.from(verificationInputs)
+        .map((input) => input.value)
+        .join("")
 
-      const userEmail = localStorage.getItem("pendingVerificationEmail")
-
-      if (code.length === 6 && userEmail) {
-        verifyCode(userEmail, code)
-      } else {
-        document.getElementById("verification-error").style.display = "block"
-      }
-    })
-  }
-
-  const resendCodeBtn = document.getElementById("resendCode")
-  if (resendCodeBtn) {
-    resendCodeBtn.addEventListener("click", function (e) {
-      e.preventDefault()
-
-      const userData = JSON.parse(localStorage.getItem("pendingUserData"))
-
-      if (userData) {
-        this.style.pointerEvents = "none"
-        this.style.opacity = "0.5"
-
-        const countdownEl = document.getElementById("countdown")
-        countdownEl.style.display = "block"
-
-        let seconds = 60
-        countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
-
-        const countdownInterval = setInterval(() => {
-          seconds--
-          countdownEl.textContent = `Podrás solicitar un nuevo código en ${seconds} segundos`
-
-          if (seconds <= 0) {
-            clearInterval(countdownInterval)
-            this.style.pointerEvents = "auto"
-            this.style.opacity = "1"
-            countdownEl.style.display = "none"
-          }
-        }, 1000)
-
-        sendVerificationCode(userData)
+      if (code.length === 6) {
+        verifyCode(code)
       }
     })
   }
 }
 
 function sendVerificationCode(userData) {
-  const backendBaseUrl = "https://hotelitus.onrender.com"
+  const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
 
-  localStorage.setItem("pendingUserData", JSON.stringify(userData))
-  localStorage.setItem("pendingVerificationEmail", userData.correo)
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'
+  submitBtn.disabled = true
 
-  fetch(`${backendBaseUrl}/create`, {
+  fetch("https://hotelitus.onrender.com/create", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1072,8 +1215,13 @@ function sendVerificationCode(userData) {
     body: JSON.stringify(userData),
   })
     .then((response) => response.json())
-    .then((result) => {
-      if (result.success) {
+    .then((data) => {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      if (data.success) {
+        localStorage.setItem("pendingUserData", JSON.stringify(userData))
+
         const bootstrap = window.bootstrap
         if (bootstrap) {
           const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
@@ -1084,32 +1232,47 @@ function sendVerificationCode(userData) {
           setTimeout(() => {
             const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
             verificationModal.show()
-            document.querySelector(".verification-input").focus()
           }, 500)
         }
       } else {
-        alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+        alert("Error al enviar código de verificación: " + (data.message || "Error desconocido"))
       }
     })
     .catch((error) => {
-      console.error("Error al enviar datos:", error)
-      alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+      console.error("Error:", error)
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+      alert("Error al conectar con el servidor")
     })
 }
 
-function verifyCode(email, code) {
-  const backendBaseUrl = "https://hotelitus.onrender.com"
+function verifyCode(code) {
+  const userData = JSON.parse(localStorage.getItem("pendingUserData"))
+  const submitBtn = document.querySelector('#verificationForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  const errorDiv = document.getElementById("verification-error")
 
-  fetch(`${backendBaseUrl}/verify-code`, {
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'
+  submitBtn.disabled = true
+
+  fetch("https://hotelitus.onrender.com/verify-code", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ correo: email, codigo: code }),
+    body: JSON.stringify({
+      correo: userData.correo,
+      codigo: code,
+    }),
   })
     .then((response) => response.json())
-    .then((result) => {
-      if (result.success) {
+    .then((data) => {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      if (data.success) {
+        localStorage.removeItem("pendingUserData")
+
         const bootstrap = window.bootstrap
         if (bootstrap) {
           const verificationModal = bootstrap.Modal.getInstance(document.getElementById("verificationModal"))
@@ -1118,25 +1281,28 @@ function verifyCode(email, code) {
           }
         }
 
-        localStorage.removeItem("pendingUserData")
-        localStorage.removeItem("pendingVerificationEmail")
-
-        alert("¡Cuenta creada con éxito! Ahora puede iniciar sesión.")
+        alert("¡Usuario creado exitosamente! Ya puedes iniciar sesión.")
 
         setTimeout(() => {
-          const bootstrap = window.bootstrap
-          if (bootstrap) {
-            const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
-            loginModal.show()
-          }
-        }, 500)
+          const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
+          loginModal.show()
+        }, 1000)
       } else {
-        document.getElementById("verification-error").style.display = "block"
+        errorDiv.style.display = "block"
+        errorDiv.textContent = data.message || "Código incorrecto"
+
+        document.querySelectorAll(".verification-input").forEach((input) => {
+          input.value = ""
+        })
+        document.querySelector(".verification-input").focus()
       }
     })
     .catch((error) => {
-      console.error("Error al verificar código:", error)
-      document.getElementById("verification-error").style.display = "block"
+      console.error("Error:", error)
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+      errorDiv.style.display = "block"
+      errorDiv.textContent = "Error al verificar el código"
     })
 }
 
@@ -1145,60 +1311,19 @@ function setupDateConstraints() {
   const checkOutInput = document.getElementById("checkOut")
 
   if (checkInInput && checkOutInput) {
-    // Establecer fecha mínima como hoy
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const today = new Date().toISOString().split("T")[0]
+    checkInInput.min = today
 
-    // Formatear fechas para el atributo min (YYYY-MM-DD)
-    const formatDate = (date) => {
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, "0")
-      const day = String(date.getDate()).padStart(2, "0")
-      return `${year}-${month}-${day}`
-    }
-
-    const todayFormatted = formatDate(today)
-    const tomorrowFormatted = formatDate(tomorrow)
-
-    checkInInput.min = todayFormatted
-    checkOutInput.min = tomorrowFormatted
-
-    // Actualizar fecha mínima de salida cuando cambia la entrada
     checkInInput.addEventListener("change", function () {
-      if (this.value) {
-        const nextDay = new Date(this.value)
-        nextDay.setDate(nextDay.getDate() + 1)
-        checkOutInput.min = formatDate(nextDay)
+      const checkInDate = new Date(this.value)
+      const nextDay = new Date(checkInDate)
+      nextDay.setDate(nextDay.getDate() + 1)
 
-        // Si la fecha de salida es anterior a la nueva fecha mínima, actualizarla
-        if (checkOutInput.value && new Date(checkOutInput.value) <= new Date(this.value)) {
-          checkOutInput.value = formatDate(nextDay)
-        }
+      checkOutInput.min = nextDay.toISOString().split("T")[0]
+
+      if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
+        checkOutInput.value = ""
       }
     })
   }
 }
-
-// Función para añadir mensajes de reserva en el HTML
-function addReservationMessagesDiv() {
-  const reservationForm = document.getElementById("reservationForm")
-  if (reservationForm && !document.getElementById("reservationMessages")) {
-    const messagesDiv = document.createElement("div")
-    messagesDiv.id = "reservationMessages"
-    messagesDiv.className = "mt-3"
-
-    // Insertar después del botón de reserva
-    const submitButton = reservationForm.querySelector('button[type="submit"]')
-    if (submitButton) {
-      submitButton.parentNode.insertBefore(messagesDiv, submitButton.nextSibling)
-    } else {
-      reservationForm.appendChild(messagesDiv)
-    }
-  }
-}
-
-// Ejecutar esta función al cargar la página
-document.addEventListener("DOMContentLoaded", () => {
-  addReservationMessagesDiv()
-})
