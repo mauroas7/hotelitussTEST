@@ -274,6 +274,7 @@ function setupModals() {
   }
 }
 
+// Función mejorada para validación de formulario
 function setupFormValidation() {
   const forms = document.querySelectorAll(".needs-validation")
   Array.from(forms).forEach((form) => {
@@ -295,15 +296,36 @@ function setupFormValidation() {
     createUserForm.addEventListener("submit", function (event) {
       event.preventDefault()
 
+      console.log("📝 Formulario enviado")
+
+      // Limpiar errores previos
+      const errorElements = this.querySelectorAll(".is-invalid")
+      errorElements.forEach((el) => el.classList.remove("is-invalid"))
+
       if (this.checkValidity()) {
         const formData = {
-          nombre: document.getElementById("userName").value,
-          correo: document.getElementById("userEmail").value,
-          telefono: document.getElementById("userTelefono").value,
+          nombre: document.getElementById("userName").value.trim(),
+          correo: document.getElementById("userEmail").value.trim(),
+          telefono: document.getElementById("userTelefono").value.trim(),
           password: document.getElementById("userPassword").value,
         }
 
+        console.log("📊 Datos del formulario:", formData)
+
+        // Validaciones adicionales
+        if (!formData.nombre || !formData.correo || !formData.telefono || !formData.password) {
+          alert("Por favor, complete todos los campos")
+          return
+        }
+
+        if (formData.password.length < 6) {
+          alert("La contraseña debe tener al menos 6 caracteres")
+          return
+        }
+
         sendVerificationCode(formData)
+      } else {
+        console.log("❌ Formulario inválido")
       }
 
       this.classList.add("was-validated")
@@ -1112,11 +1134,20 @@ function setupVerificationCode() {
   }
 }
 
+// Función mejorada para enviar código de verificación
 function sendVerificationCode(userData) {
   const backendBaseUrl = "https://hotelitus.onrender.com"
 
+  console.log("📤 Enviando datos de usuario:", userData)
+
   localStorage.setItem("pendingUserData", JSON.stringify(userData))
   localStorage.setItem("pendingVerificationEmail", userData.correo)
+
+  // Mostrar indicador de carga
+  const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando código...'
+  submitBtn.disabled = true
 
   fetch(`${backendBaseUrl}/create`, {
     method: "POST",
@@ -1125,9 +1156,20 @@ function sendVerificationCode(userData) {
     },
     body: JSON.stringify(userData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      console.log("📥 Respuesta del servidor:", response.status)
+      return response.json()
+    })
     .then((result) => {
+      console.log("📋 Resultado:", result)
+
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
       if (result.success) {
+        console.log("✅ Código enviado exitosamente")
+
         const bootstrap = window.bootstrap
         if (bootstrap) {
           const createUserModal = bootstrap.Modal.getInstance(document.getElementById("createUserModal"))
@@ -1142,12 +1184,18 @@ function sendVerificationCode(userData) {
           }, 500)
         }
       } else {
-        alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+        console.error("❌ Error del servidor:", result.message)
+        alert(result.message || "Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
       }
     })
     .catch((error) => {
-      console.error("Error al enviar datos:", error)
-      alert("Error al enviar el código de verificación. Por favor, inténtelo de nuevo.")
+      console.error("❌ Error de red:", error)
+
+      // Restaurar botón
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+
+      alert("Error de conexión. Por favor, verifique su conexión a internet e inténtelo de nuevo.")
     })
 }
 
