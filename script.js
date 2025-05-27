@@ -928,6 +928,20 @@ function setupUserSession() {
 
   const urlParams = new URLSearchParams(window.location.search)
   const loggedIn = urlParams.get("logged")
+  const showLogin = urlParams.get("showLogin") // AGREGAR ESTA LÍNEA
+
+  // AGREGAR ESTE BLOQUE COMPLETO:
+  // Si viene de página A después de crear cuenta, mostrar modal de login
+  if (showLogin === "true") {
+    window.history.replaceState({}, document.title, "/")
+    setTimeout(() => {
+      const bootstrap = window.bootstrap
+      if (bootstrap) {
+        const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
+        loginModal.show()
+      }
+    }, 500)
+  }
 
   if (loggedIn === "true") {
     localStorage.setItem("userLoggedIn", "true")
