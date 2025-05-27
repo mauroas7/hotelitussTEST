@@ -17,8 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMyReservations()
   setupDateConstraints()
   setupLoginForm()
-  setupAdminPanel() // Nueva función para el panel de administración
-  handlePaymentReturn() // Nueva función para manejar el retorno de MercadoPago
+  setupAdminPanel()
+  handlePaymentReturn()
 
   const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
@@ -914,9 +914,25 @@ function setupVerificationCode() {
       }
     })
   }
+
+  // Configurar reenvío de código
+  const resendCodeLink = document.getElementById("resendCode")
+  if (resendCodeLink) {
+    resendCodeLink.addEventListener("click", function (e) {
+      e.preventDefault()
+      resendVerificationCode()
+    })
+  }
 }
 
 function sendVerificationCode(userData) {
+  console.log("📧 Enviando código de verificación para:", userData.correo)
+  
+  const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando código...'
+  submitBtn.disabled = true
+
   fetch("https://hotelitus.onrender.com/create", {
     method: "POST",
     headers: {
@@ -926,7 +942,11 @@ function sendVerificationCode(userData) {
   })
     .then((response) => response.json())
     .then((result) => {
+      console.log("📥 Respuesta del servidor:", result)
+      
       if (result.success) {
+        console.log("✅ Código enviado exitosamente")
+        
         // Guardar datos temporalmente
         localStorage.setItem("tempUserData", JSON.stringify(userData))
 
@@ -938,25 +958,43 @@ function sendVerificationCode(userData) {
           setTimeout(() => {
             const verificationModal = new bootstrap.Modal(document.getElementById("verificationModal"))
             verificationModal.show()
+            
+            // Enfocar el primer input de verificación
+            setTimeout(() => {
+              const firstInput = document.querySelector(".verification-input")
+              if (firstInput) firstInput.focus()
+            }, 500)
           }, 500)
         }
       } else {
+        console.log("❌ Error al enviar código:", result.message)
         alert("Error: " + (result.message || "No se pudo enviar el código"))
       }
     })
     .catch((error) => {
-      console.error("Error:", error)
-      alert("Error al enviar código de verificación")
+      console.error("💥 Error en la solicitud:", error)
+      alert("Error al enviar código de verificación. Verifique su conexión e inténtelo de nuevo.")
+    })
+    .finally(() => {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
     })
 }
 
 function verifyCode(code) {
+  console.log("🔍 Verificando código:", code)
+  
   const tempUserData = JSON.parse(localStorage.getItem("tempUserData"))
 
   if (!tempUserData) {
     alert("Error: Datos de usuario no encontrados")
     return
   }
+
+  const submitBtn = document.querySelector('#verificationForm button[type="submit"]')
+  const originalBtnText = submitBtn.innerHTML
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'
+  submitBtn.disabled = true
 
   fetch("https://hotelitus.onrender.com/verify-code", {
     method: "POST",
@@ -970,7 +1008,11 @@ function verifyCode(code) {
   })
     .then((response) => response.json())
     .then((result) => {
+      console.log("📥 Respuesta de verificación:", result)
+      
       if (result.success) {
+        console.log("✅ Código verificado exitosamente")
+        
         // Limpiar datos temporales
         localStorage.removeItem("tempUserData")
 
@@ -982,21 +1024,122 @@ function verifyCode(code) {
         }
 
         // Mostrar mensaje de éxito
-        alert("¡Usuario creado exitosamente! Ahora puedes iniciar sesión.")
+        showSuccessMessage("¡Usuario creado exitosamente! Ahora puedes iniciar sesión.")
 
-        // Abrir modal de login
+        // Abrir modal de login después de un momento
         setTimeout(() => {
           const loginModal = new bootstrap.Modal(document.getElementById("loginModal"))
           loginModal.show()
-        }, 500)
+        }, 1000)
       } else {
+        console.log("❌ Error en verificación:", result.message)
         document.getElementById("verification-error").style.display = "block"
+        document.getElementById("verification-error").textContent = result.message || "Código incorrecto"
       }
     })
     .catch((error) => {
-      console.error("Error:", error)
-      alert("Error al verificar código")
+      console.error("💥 Error al verificar código:", error)
+      document.getElementById("verification-error").style.display = "block"
+      document.getElementById("verification-error").textContent = "Error de conexión. Inténtelo de nuevo."
     })
+    .finally(() => {
+      submitBtn.innerHTML = originalBtnText
+      submitBtn.disabled = false
+    })
+}
+
+function resendVerificationCode() {
+  console.log("🔄 Reenviando código de verificación")
+  
+  const tempUserData = JSON.parse(localStorage.getItem("tempUserData"))
+
+  if (!tempUserData) {
+    alert("Error: No hay solicitud de registro pendiente")
+    return
+  }
+
+  const resendLink = document.getElementById("resendCode")
+  const originalText = resendLink.textContent
+  resendLink.textContent = "Enviando..."
+  resendLink.style.pointerEvents = "none"
+
+  fetch("https://hotelitus.onrender.com/resend-code", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      correo: tempUserData.correo,
+    }),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.success) {
+        console.log("✅ Código reenviado exitosamente")
+        showSuccessMessage("Nuevo código enviado a tu correo electrónico")
+        
+        // Limpiar inputs de verificación
+        document.querySelectorAll(".verification-input").forEach(input => {
+          input.value = ""
+        })
+        
+        // Enfocar el primer input
+        document.querySelector(".verification-input").focus()
+        
+        // Iniciar countdown
+        startResendCountdown()
+      } else {
+        console.log("❌ Error al reenviar código:", result.message)
+        alert("Error: " + (result.message || "No se pudo reenviar el código"))
+      }
+    })
+    .catch((error) => {
+      console.error("💥 Error al reenviar código:", error)
+      alert("Error de conexión. Inténtelo de nuevo.")
+    })
+    .finally(() => {
+      resendLink.textContent = originalText
+      resendLink.style.pointerEvents = "auto"
+    })
+}
+
+function startResendCountdown() {
+  const resendLink = document.getElementById("resendCode")
+  const countdownDiv = document.getElementById("countdown")
+  let seconds = 60
+
+  resendLink.style.display = "none"
+  countdownDiv.style.display = "block"
+
+  const interval = setInterval(() => {
+    countdownDiv.textContent = `Puedes solicitar un nuevo código en ${seconds} segundos`
+    seconds--
+
+    if (seconds < 0) {
+      clearInterval(interval)
+      resendLink.style.display = "inline"
+      countdownDiv.style.display = "none"
+    }
+  }, 1000)
+}
+
+function showSuccessMessage(message) {
+  const alertDiv = document.createElement("div")
+  alertDiv.className = "alert alert-success alert-dismissible fade show position-fixed"
+  alertDiv.style.cssText = "top: 100px; right: 20px; z-index: 9999; max-width: 400px;"
+  alertDiv.innerHTML = `
+    <i class="fas fa-check-circle me-2"></i>${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `
+
+  document.body.appendChild(alertDiv)
+
+  // Auto-remover después de 5 segundos
+  setTimeout(() => {
+    if (alertDiv.parentNode) {
+      alertDiv.parentNode.removeChild(alertDiv)
+    }
+  }, 5000)
 }
 
 function setupReservationForm() {
