@@ -91,12 +91,6 @@
                             <li><a class="dropdown-item d-flex align-items-center" href="#" id="myReservationsLink">
                                 <i class="fas fa-history me-2"></i>Mis reservas
                             </a></li>
-                            <!-- Enlace de administración (solo para admins) -->
-                            <li id="adminPanelLink" style="display: none;">
-                                <a class="dropdown-item d-flex align-items-center" href="#" id="showAdminPanel">
-                                    <i class="fas fa-cogs me-2"></i>Panel de Administración
-                                </a>
-                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item d-flex align-items-center" href="#" id="logoutLink">
                                 <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
@@ -673,85 +667,78 @@
         </div>
     </section>
 
-    <!-- Panel de Administración Mejorado -->
+    <!-- Panel de Administración -->
     <section id="admin-panel" class="py-5" style="display: none;">
-        <div class="container-fluid">
+        <div class="container">
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="section-title">Panel de Administración</h2>
-                        <div class="admin-user-info d-flex align-items-center">
-                            <span class="badge bg-primary fs-6 me-3">
+                        <div class="admin-user-info">
+                            <span class="badge bg-primary fs-6">
                                 <i class="fas fa-user-shield me-2"></i>
                                 <span id="adminUserName">Administrador</span>
                             </span>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="volverAlSitio()">
-                                <i class="fas fa-arrow-left me-2"></i>Volver al sitio
-                            </button>
                         </div>
                     </div>
                     
-                    <!-- Estadísticas Dashboard Mejoradas -->
+                    <!-- Estadísticas Dashboard -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3">
-                            <div class="card bg-primary text-white h-100">
+                            <div class="card bg-primary text-white">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h4 id="totalUsuarios">0</h4>
                                             <p class="mb-0">Total Usuarios</p>
-                                            <small class="opacity-75">Registrados en el sistema</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-users fa-2x opacity-75"></i>
+                                            <i class="fas fa-users fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <div class="card bg-success text-white h-100">
+                            <div class="card bg-success text-white">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h4 id="totalReservas">0</h4>
                                             <p class="mb-0">Total Reservas</p>
-                                            <small class="opacity-75">Todas las reservas</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+                                            <i class="fas fa-calendar-check fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <div class="card bg-warning text-white h-100">
+                            <div class="card bg-warning text-white">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h4 id="reservasActivas">0</h4>
                                             <p class="mb-0">Reservas Activas</p>
-                                            <small class="opacity-75">Confirmadas y pendientes</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-bed fa-2x opacity-75"></i>
+                                            <i class="fas fa-bed fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <div class="card bg-info text-white h-100">
+                            <div class="card bg-info text-white">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h4 id="ingresosMes">$0</h4>
                                             <p class="mb-0">Ingresos del Mes</p>
-                                            <small class="opacity-75">Estimado por reservas</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -759,7 +746,7 @@
                         </div>
                     </div>
 
-                    <!-- Navegación de pestañas mejorada -->
+                    <!-- Navegación de pestañas -->
                     <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="reservas-tab" data-bs-toggle="tab" data-bs-target="#reservas-panel" type="button" role="tab">
@@ -771,34 +758,20 @@
                                 <i class="fas fa-users me-2"></i>Gestión de Huéspedes
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="sistema-tab" data-bs-toggle="tab" data-bs-target="#sistema-panel" type="button" role="tab">
-                                <i class="fas fa-cogs me-2"></i>Gestión del Sistema
-                            </button>
-                        </li>
                     </ul>
 
-                    <!-- Contenido de las pestañas mejorado -->
+                    <!-- Contenido de las pestañas -->
                     <div class="tab-content" id="adminTabsContent">
-                        <!-- Panel de Reservas Mejorado -->
+                        <!-- Panel de Reservas -->
                         <div class="tab-pane fade show active" id="reservas-panel" role="tabpanel">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">
-                                        <i class="fas fa-calendar-alt me-2"></i>Gestión de Reservas
+                                        <i class="fas fa-calendar-alt me-2"></i>Todas las Reservas
                                     </h5>
-                                    <div class="d-flex gap-2">
-                                        <div class="input-group" style="width: 250px;">
-                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" class="form-control" id="searchReservas" placeholder="Buscar reservas...">
-                                        </div>
-                                        <button class="btn btn-success btn-sm" onclick="exportarReservas()">
-                                            <i class="fas fa-download me-1"></i>Exportar
-                                        </button>
-                                        <button class="btn btn-primary btn-sm" onclick="cargarReservasAdmin()">
-                                            <i class="fas fa-sync-alt me-1"></i>Actualizar
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="cargarReservasAdmin()">
+                                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                    </button>
                                 </div>
                                 <div class="card-body">
                                     <div id="reservasAdminLoading" class="text-center py-4">
@@ -818,7 +791,6 @@
                                                         <th>Habitación</th>
                                                         <th>Fecha Entrada</th>
                                                         <th>Fecha Salida</th>
-                                                        <th>Huéspedes</th>
                                                         <th>Estado</th>
                                                         <th>Total</th>
                                                         <th>Acciones</th>
@@ -834,25 +806,16 @@
                             </div>
                         </div>
 
-                        <!-- Panel de Usuarios Mejorado -->
+                        <!-- Panel de Usuarios -->
                         <div class="tab-pane fade" id="usuarios-panel" role="tabpanel">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">
-                                        <i class="fas fa-users me-2"></i>Gestión de Huéspedes
+                                        <i class="fas fa-users me-2"></i>Todos los Huéspedes
                                     </h5>
-                                    <div class="d-flex gap-2">
-                                        <div class="input-group" style="width: 250px;">
-                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" class="form-control" id="searchUsuarios" placeholder="Buscar huéspedes...">
-                                        </div>
-                                        <button class="btn btn-success btn-sm" onclick="crearNuevoHuesped()">
-                                            <i class="fas fa-plus me-1"></i>Nuevo Huésped
-                                        </button>
-                                        <button class="btn btn-primary btn-sm" onclick="cargarUsuariosAdmin()">
-                                            <i class="fas fa-sync-alt me-1"></i>Actualizar
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="cargarUsuariosAdmin()">
+                                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                    </button>
                                 </div>
                                 <div class="card-body">
                                     <div id="usuariosAdminLoading" class="text-center py-4">
@@ -870,143 +833,15 @@
                                                         <th>Nombre</th>
                                                         <th>Correo</th>
                                                         <th>Teléfono</th>
-                                                        <th>Fecha Registro</th>
                                                         <th>Total Reservas</th>
                                                         <th>Última Reserva</th>
                                                         <th>Estado</th>
-                                                        <th>Acciones</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="usuariosAdminTableBody">
                                                     <!-- Los usuarios se cargarán aquí -->
                                                 </tbody>
                                             </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Nuevo Panel de Sistema -->
-                        <div class="tab-pane fade" id="sistema-panel" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-user-cog me-2"></i>Gestión de Administradores
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <h6>Administradores del Sistema</h6>
-                                                <button class="btn btn-primary btn-sm" onclick="crearNuevoAdmin()">
-                                                    <i class="fas fa-plus me-1"></i>Nuevo Admin
-                                                </button>
-                                            </div>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Usuario</th>
-                                                            <th>Rol</th>
-                                                            <th>Estado</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="adminUsersTableBody">
-                                                        <!-- Los administradores se cargarán aquí -->
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-4">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-chart-bar me-2"></i>Estadísticas Detalladas
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-6 mb-3">
-                                                    <div class="text-center">
-                                                        <h4 id="ocupacionHoy" class="text-primary">0%</h4>
-                                                        <small>Ocupación Hoy</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 mb-3">
-                                                    <div class="text-center">
-                                                        <h4 id="reservasHoy" class="text-success">0</h4>
-                                                        <small>Reservas Hoy</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 mb-3">
-                                                    <div class="text-center">
-                                                        <h4 id="checkInsHoy" class="text-warning">0</h4>
-                                                        <small>Check-ins Hoy</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6 mb-3">
-                                                    <div class="text-center">
-                                                        <h4 id="checkOutsHoy" class="text-info">0</h4>
-                                                        <small>Check-outs Hoy</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-tools me-2"></i>Configuración del Sistema
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <form id="configForm">
-                                                <div class="row">
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="precioIndividual" class="form-label">Precio Habitación Individual</label>
-                                                        <div class="input-group">
-                                                            <span class="input-group-text">$</span>
-                                                            <input type="number" class="form-control" id="precioIndividual" value="120">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="precioDoble" class="form-label">Precio Habitación Doble</label>
-                                                        <div class="input-group">
-                                                            <span class="input-group-text">$</span>
-                                                            <input type="number" class="form-control" id="precioDoble" value="180">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="precioSuite" class="form-label">Precio Suite Ejecutiva</label>
-                                                        <div class="input-group">
-                                                            <span class="input-group-text">$</span>
-                                                            <input type="number" class="form-control" id="precioSuite" value="280">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="emailHotel" class="form-label">Email del Hotel</label>
-                                                        <input type="email" class="form-control" id="emailHotel" value="info@hotelituss.com">
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label for="telefonoHotel" class="form-label">Teléfono del Hotel</label>
-                                                        <input type="tel" class="form-control" id="telefonoHotel" value="+54 261 423 7890">
-                                                    </div>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="fas fa-save me-2"></i>Guardar Configuración
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -1301,107 +1136,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Editar Reserva (Admin) -->
-    <div class="modal fade" id="editReservationModal" tabindex="-1" aria-labelledby="editReservationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editReservationModalLabel">Editar Reserva</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editReservationForm">
-                        <input type="hidden" id="editReservationId">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="editCheckIn" class="form-label">Fecha de entrada</label>
-                                <input type="date" class="form-control" id="editCheckIn" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="editCheckOut" class="form-label">Fecha de salida</label>
-                                <input type="date" class="form-control" id="editCheckOut" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="editRoomType" class="form-label">Tipo de habitación</label>
-                                <select class="form-select" id="editRoomType" required>
-                                    <option value="individual">Habitación Individual</option>
-                                    <option value="doble">Habitación Doble</option>
-                                    <option value="suite">Suite Ejecutiva</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="editGuests" class="form-label">Número de huéspedes</label>
-                                <input type="number" class="form-control" id="editGuests" min="1" max="4" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="editReservationStatus" class="form-label">Estado</label>
-                                <select class="form-select" id="editReservationStatus" required>
-                                    <option value="confirmada">Confirmada</option>
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="cancelada">Cancelada</option>
-                                    <option value="completada">Completada</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="editSpecialRequests" class="form-label">Solicitudes especiales</label>
-                                <textarea class="form-control" id="editSpecialRequests" rows="2"></textarea>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarCambiosReserva()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Crear/Editar Huésped (Admin) -->
-    <div class="modal fade" id="editGuestModal" tabindex="-1" aria-labelledby="editGuestModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editGuestModalLabel">Editar Huésped</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editGuestForm">
-                        <input type="hidden" id="editGuestId">
-                        <div class="mb-3">
-                            <label for="editGuestName" class="form-label">Nombre completo</label>
-                            <input type="text" class="form-control" id="editGuestName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editGuestEmail" class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" id="editGuestEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editGuestPhone" class="form-label">Teléfono</label>
-                            <input type="tel" class="form-control" id="editGuestPhone" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editGuestStatus" class="form-label">Estado</label>
-                            <select class="form-select" id="editGuestStatus" required>
-                                <option value="activo">Activo</option>
-                                <option value="inactivo">Inactivo</option>
-                                <option value="bloqueado">Bloqueado</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarCambiosHuesped()">Guardar Cambios</button>
                 </div>
             </div>
         </div>
