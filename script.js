@@ -607,14 +607,51 @@ function setupFormValidation() {
       event.preventDefault()
 
       if (this.checkValidity()) {
-        const formData = {
-          nombre: document.getElementById("userName").value,
-          correo: document.getElementById("userEmail").value,
-          telefono: document.getElementById("userTelefono").value,
-          password: document.getElementById("userPassword").value,
+        // CORREGIDO: Obtener valores directamente de los campos
+        const nombre = document.getElementById("userName").value.trim()
+        const correo = document.getElementById("userEmail").value.trim()
+        const telefono = document.getElementById("userTelefono").value.trim()
+        const password = document.getElementById("userPassword").value.trim()
+
+        console.log("📝 Datos del formulario capturados:")
+        console.log("- Nombre:", nombre)
+        console.log("- Correo:", correo)
+        console.log("- Teléfono:", telefono)
+        console.log("- Password:", password ? "***" : "VACÍO")
+
+        // Validar que todos los campos estén completos
+        if (!nombre || !correo || !telefono || !password) {
+          console.error("❌ Faltan campos requeridos")
+          alert("Por favor, complete todos los campos requeridos")
+          return
         }
 
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(correo)) {
+          console.error("❌ Formato de email inválido")
+          alert("Por favor, ingrese un email válido")
+          return
+        }
+
+        // Validar longitud de contraseña
+        if (password.length < 6) {
+          console.error("❌ Contraseña muy corta")
+          alert("La contraseña debe tener al menos 6 caracteres")
+          return
+        }
+
+        const formData = {
+          nombre: nombre,
+          correo: correo,
+          telefono: telefono,
+          password: password,
+        }
+
+        console.log("✅ Enviando datos validados:", formData)
         sendVerificationCode(formData)
+      } else {
+        console.error("❌ Formulario no válido")
       }
 
       this.classList.add("was-validated")
@@ -927,6 +964,7 @@ function setupVerificationCode() {
 
 function sendVerificationCode(userData) {
   console.log("📧 Enviando código de verificación para:", userData.correo)
+  console.log("📦 Datos completos a enviar:", userData)
   
   const submitBtn = document.querySelector('#createUserForm button[type="submit"]')
   const originalBtnText = submitBtn.innerHTML
@@ -940,9 +978,12 @@ function sendVerificationCode(userData) {
     },
     body: JSON.stringify(userData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      console.log("📡 Status de respuesta:", response.status)
+      return response.json()
+    })
     .then((result) => {
-      console.log("📥 Respuesta del servidor:", result)
+      console.log("📥 Respuesta completa del servidor:", result)
       
       if (result.success) {
         console.log("✅ Código enviado exitosamente")
