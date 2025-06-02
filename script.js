@@ -1001,6 +1001,7 @@ function setupUserSession() {
 
 // NUEVAS FUNCIONES PARA EL PANEL DE ADMINISTRACIÓN
 
+// Modificar la función showAdminPanel para simplificar la bienvenida
 function showAdminPanel() {
   // Ocultar contenido normal del hotel
   const sections = ["bienvenida", "habitaciones", "servicios", "reservas", "opiniones", "ubicacion", "contacto"]
@@ -1010,6 +1011,31 @@ function showAdminPanel() {
       section.style.display = "none"
     }
   })
+
+  // Ocultar el carrusel del hero
+  const heroCarousel = document.getElementById("heroCarousel")
+  if (heroCarousel) {
+    heroCarousel.style.display = "none"
+  }
+
+  // Simplificar el contenido del hero para administradores
+  const heroContent = document.querySelector(".hero-content")
+  if (heroContent) {
+    heroContent.innerHTML = `
+      <h1 class="display-4">Panel de Administración Hotelituss</h1>
+      <p class="lead">Sistema de gestión hotelera</p>
+    `
+    heroContent.style.backgroundColor = "rgba(0, 0, 0, 0.7)"
+    heroContent.style.padding = "2rem"
+    heroContent.style.borderRadius = "0.5rem"
+  }
+
+  // Ajustar altura del hero para que sea más compacto
+  const heroSection = document.querySelector(".hero")
+  if (heroSection) {
+    heroSection.style.height = "30vh"
+    heroSection.style.minHeight = "200px"
+  }
 
   // Mostrar panel de administración
   const adminPanel = document.getElementById("admin-panel")
