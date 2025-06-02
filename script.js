@@ -17,7 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMyReservations()
   setupDateConstraints()
   setupLoginForm()
-  handlePaymentReturn() // Nueva función para manejar el retorno de MercadoPago
+  handlePaymentReturn()
+  setupAdminPanel() // Nueva función para el panel de administración
 
   const misReservasLink = document.getElementById("myReservationsLink")
   if (misReservasLink) {
@@ -352,6 +353,15 @@ function setupLoginForm() {
             localStorage.setItem("userLoggedIn", "true")
             localStorage.setItem("usuarioLogueado", email)
             localStorage.setItem("currentUserEmail", email)
+            
+            // Verificar si es administrador por el dominio del correo
+            const isAdmin = email.endsWith("@admin.hotelituss.com")
+            localStorage.setItem("userRole", isAdmin ? "administrador" : "usuario")
+            
+            // Guardar información del usuario
+            if (data.user) {
+              localStorage.setItem("currentUserData", JSON.stringify(data.user))
+            }
 
             const bootstrap = window.bootstrap
             if (bootstrap) {
@@ -361,7 +371,12 @@ function setupLoginForm() {
               }
             }
 
-            window.location.reload()
+            // Verificar si es administrador y mostrar panel correspondiente
+            if (isAdmin) {
+              showAdminPanel()
+            } else {
+              window.location.reload()
+            }
           } else {
             errorMsg.textContent = data.message || "Credenciales incorrectas"
             errorMsg.classList.remove("d-none")
@@ -928,9 +943,8 @@ function setupUserSession() {
 
   const urlParams = new URLSearchParams(window.location.search)
   const loggedIn = urlParams.get("logged")
-  const showLogin = urlParams.get("showLogin") // AGREGAR ESTA LÍNEA
+  const showLogin = urlParams.get("showLogin")
 
-  // AGREGAR ESTE BLOQUE COMPLETO:
   // Si viene de página A después de crear cuenta, mostrar modal de login
   if (showLogin === "true") {
     window.history.replaceState({}, document.title, "/")
@@ -953,12 +967,19 @@ function setupUserSession() {
   }
 
   const isLogged = localStorage.getItem("userLoggedIn") === "true"
+  const userRole = localStorage.getItem("userRole")
 
   if (isLogged) {
-    if (loginLink) loginLink.style.display = "none"
-    if (createUserLink) createUserLink.style.display = "none"
-    if (userProfileDropdown) userProfileDropdown.style.display = "block"
-    loadUserData()
+    if (userRole === "administrador") {
+      // Si es administrador, mostrar panel de administración
+      showAdminPanel()
+    } else {
+      // Usuario normal
+      if (loginLink) loginLink.style.display = "none"
+      if (createUserLink) createUserLink.style.display = "none"
+      if (userProfileDropdown) userProfileDropdown.style.display = "block"
+      loadUserData()
+    }
   } else {
     if (loginLink) loginLink.style.display = "block"
     if (createUserLink) createUserLink.style.display = "block"
@@ -972,6 +993,7 @@ function setupUserSession() {
       localStorage.removeItem("userLoggedIn")
       localStorage.removeItem("currentUserEmail")
       localStorage.removeItem("currentUserData")
+      localStorage.removeItem("userRole")
       window.location.reload()
     })
   }
@@ -1263,6 +1285,276 @@ function addReservationMessagesDiv() {
     } else {
       reservationForm.appendChild(messagesDiv)
     }
+  }
+}
+
+// ==================== FUNCIONES DE ADMINISTRACIÓN ====================
+
+function setupAdminPanel() {
+  // Verificar si el usuario es administrador al cargar la página
+  const userRole = localStorage.getItem("userRole")
+  if (userRole === "administrador") {
+    showAdminPanel()
+  }
+}
+
+function showAdminPanel() {
+  // Ocultar todas las secciones principales
+  const mainSections = [
+    'header#inicio',
+    'section#bienvenida',
+    'section#habitaciones',
+    'section#servicios',
+    'section#reservas',
+    'section#opiniones',
+    'section#ubicacion',
+    'section#contacto',
+    'footer'
+  ]
+
+  mainSections.forEach(selector => {
+    const element = document.querySelector(selector)
+    if (element) {
+      element.style.display = 'none'
+    }
+  })
+
+  // Mostrar el panel de administración
+  const adminPanel = document.getElementById('admin-panel')
+  if (adminPanel) {
+    adminPanel.style.display = 'block'
+    
+    // Actualizar información del administrador
+    const userData = JSON.parse(localStorage.getItem('currentUserData') || '{}')
+    const adminUserName = document.getElementById('adminUserName')
+    if (adminUserName) {
+      adminUserName.textContent = userData.nombre || 'Administrador'
+    }
+
+    // Cargar datos iniciales
+    cargarEstadisticasAdmin()
+    cargarReservasAdmin()
+    cargarUsuariosAdmin()
+  }
+
+  // Modificar la navbar para administradores
+  const navbarNav = document.querySelector('.navbar-nav')
+  if (navbarNav) {
+    // Ocultar enlaces de navegación normales
+    const navLinks = navbarNav.querySelectorAll('.nav-link:not(.btn)')
+    navLinks.forEach(link => {
+      if (!link.closest('#userProfileDropdown')) {
+        link.style.display = 'none'
+      }
+    })
+  }
+}
+
+function cargarEstadisticasAdmin() {
+  // Cargar estadísticas generales
+  fetch('https://hotelitus.onrender.com/admin/estadisticas', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Actualizar contadores en el dashboard
+      document.getElementById('totalUsuarios').textContent = data.estadisticas.totalUsuarios || 0
+      document.getElementById('totalReservas').textContent = data.estadisticas.totalReservas || 0
+      document.getElementById('reservasActivas').textContent = data.estadisticas.reservasActivas || 0
+      document.getElementById('ingresosMes').textContent = `$${data.estadisticas.ingresosMes || 0}`
+    }
+  })
+  .catch(error => {
+    console.error('Error al cargar estadísticas:', error)
+  })
+}
+
+function cargarReservasAdmin() {
+  const loadingElement = document.getElementById('reservasAdminLoading')
+  const contentElement = document.getElementById('reservasAdminContent')
+  const tableBody = document.getElementById('reservasAdminTableBody')
+
+  if (loadingElement) loadingElement.style.display = 'block'
+  if (contentElement) contentElement.style.display = 'none'
+
+  fetch('https://hotelitus.onrender.com/admin/reservas', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (loadingElement) loadingElement.style.display = 'none'
+    if (contentElement) contentElement.style.display = 'block'
+
+    if (data.success && tableBody) {
+      tableBody.innerHTML = ''
+      
+      data.reservas.forEach(reserva => {
+        const row = document.createElement('tr')
+        
+        const fechaInicio = new Date(reserva.fecha_inicio).toLocaleDateString()
+        const fechaFin = new Date(reserva.fecha_fin).toLocaleDateString()
+        
+        let estadoBadge = ''
+        switch(reserva.estado) {
+          case 'confirmada':
+            estadoBadge = '<span class="badge bg-success">Confirmada</span>'
+            break
+          case 'pendiente_pago':
+            estadoBadge = '<span class="badge bg-warning">Pendiente Pago</span>'
+            break
+          case 'cancelada':
+            estadoBadge = '<span class="badge bg-danger">Cancelada</span>'
+            break
+          default:
+            estadoBadge = '<span class="badge bg-secondary">Pendiente</span>'
+        }
+
+        const total = reserva.monto_pagado || calcularTotalReserva(reserva)
+
+        row.innerHTML = `
+          <td>${reserva.id}</td>
+          <td>${reserva.nombre_huesped || 'N/A'}</td>
+          <td>${reserva.correo_huesped || 'N/A'}</td>
+          <td>${getTipoHabitacion(reserva.habitacion_id)}</td>
+          <td>${fechaInicio}</td>
+          <td>${fechaFin}</td>
+          <td>${estadoBadge}</td>
+          <td>$${total}</td>
+          <td>
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-outline-primary" onclick="verDetalleReserva(${reserva.id})" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              ${reserva.estado !== 'cancelada' ? `
+                <button class="btn btn-outline-danger" onclick="cancelarReservaAdmin(${reserva.id})" title="Cancelar">
+                  <i class="fas fa-times"></i>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        `
+        
+        tableBody.appendChild(row)
+      })
+    }
+  })
+  .catch(error => {
+    console.error('Error al cargar reservas:', error)
+    if (loadingElement) loadingElement.style.display = 'none'
+    if (contentElement) contentElement.style.display = 'block'
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar las reservas</td></tr>'
+    }
+  })
+}
+
+function cargarUsuariosAdmin() {
+  const loadingElement = document.getElementById('usuariosAdminLoading')
+  const contentElement = document.getElementById('usuariosAdminContent')
+  const tableBody = document.getElementById('usuariosAdminTableBody')
+
+  if (loadingElement) loadingElement.style.display = 'block'
+  if (contentElement) contentElement.style.display = 'none'
+
+  fetch('https://hotelitus.onrender.com/admin/usuarios', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (loadingElement) loadingElement.style.display = 'none'
+    if (contentElement) contentElement.style.display = 'block'
+
+    if (data.success && tableBody) {
+      tableBody.innerHTML = ''
+      
+      data.usuarios.forEach(usuario => {
+        const row = document.createElement('tr')
+        
+        const ultimaReserva = usuario.ultima_reserva ? 
+          new Date(usuario.ultima_reserva).toLocaleDateString() : 'Nunca'
+        
+        const estadoUsuario = usuario.total_reservas > 0 ? 
+          '<span class="badge bg-success">Activo</span>' : 
+          '<span class="badge bg-secondary">Nuevo</span>'
+
+        row.innerHTML = `
+          <td>${usuario.id}</td>
+          <td>${usuario.nombre}</td>
+          <td>${usuario.correo}</td>
+          <td>${usuario.telefono || 'N/A'}</td>
+          <td>${usuario.total_reservas || 0}</td>
+          <td>${ultimaReserva}</td>
+          <td>${estadoUsuario}</td>
+        `
+        
+        tableBody.appendChild(row)
+      })
+    }
+  })
+  .catch(error => {
+    console.error('Error al cargar usuarios:', error)
+    if (loadingElement) loadingElement.style.display = 'none'
+    if (contentElement) contentElement.style.display = 'block'
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar los usuarios</td></tr>'
+    }
+  })
+}
+
+function calcularTotalReserva(reserva) {
+  // Precios por tipo de habitación (deberían coincidir con el backend)
+  const precios = {
+    1: 120, // Individual
+    2: 180, // Doble
+    3: 280  // Suite
+  }
+  
+  const fechaInicio = new Date(reserva.fecha_inicio)
+  const fechaFin = new Date(reserva.fecha_fin)
+  const noches = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24))
+  const precioPorNoche = precios[reserva.habitacion_id] || 120
+  
+  return noches * precioPorNoche
+}
+
+function verDetalleReserva(reservaId) {
+  // Implementar modal o página de detalles de reserva
+  alert(`Ver detalles de la reserva ${reservaId}`)
+}
+
+function cancelarReservaAdmin(reservaId) {
+  if (confirm('¿Está seguro que desea cancelar esta reserva?')) {
+    fetch('https://hotelitus.onrender.com/admin/cancelar-reserva', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ reserva_id: reservaId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Reserva cancelada exitosamente')
+        cargarReservasAdmin() // Recargar la tabla
+        cargarEstadisticasAdmin() // Actualizar estadísticas
+      } else {
+        alert('Error al cancelar la reserva: ' + (data.message || 'Error desconocido'))
+      }
+    })
+    .catch(error => {
+      console.error('Error al cancelar reserva:', error)
+      alert('Error al cancelar la reserva')
+    })
   }
 }
 
